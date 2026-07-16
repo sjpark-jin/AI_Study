@@ -1,0 +1,50 @@
+name: Weekly Saturday Publish
+
+# 매주 토요일, drafts/ 창고에서 다음 주차 하나를 꺼내 루트로 공개한다.
+on:
+  schedule:
+    # cron은 UTC 기준. 아래는 토요일 09:00 KST(= 토요일 00:00 UTC).
+    # 시각 바꾸려면: (원하는 KST 시 - 9)를 UTC로. 예) 토요일 저녁 8시 KST(20-9=11) → '0 11 * * 6'
+    - cron: '0 0 * * 6'
+  workflow_dispatch: {}   # Actions 탭에서 수동 발행 버튼
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Pick next draft and publish
+        run: |
+          set -e
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # drafts/week-XX 중 이름순 가장 앞(=번호 가장 낮은) 하나 선택
+          NEXT=""
+          if [ -d drafts ]; then
+            NEXT=$(find drafts -maxdepth 1 -type d -name 'week-*' | sort | head -n 1)
+          fi
+
+          if [ -z "$NEXT" ]; then
+            echo "창고(drafts/)에 발행할 주차가 없습니다. 이번 주는 건너뜁니다."
+            exit 0
+          fi
+
+          NAME=$(basename "$NEXT")          # 예: week-02
+          echo "발행 대상: $NAME"
+
+          if [ -e "$NAME" ]; then
+            echo "루트에 이미 $NAME 가 존재합니다. 충돌 방지를 위해 중단합니다."
+            exit 1
+          fi
+
+          # 창고 → 루트로 이동 후 커밋
+          git mv "$NEXT" "$NAME"
+          DATE=$(date -u +%Y-%m-%d)
+          git commit -m "publish: $NAME ($DATE)"
+          git push
