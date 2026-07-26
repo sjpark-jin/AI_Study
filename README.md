@@ -1,39 +1,40 @@
-# Week 01 — 최소 RAG 챗봇 직접 구성해보기 (FastAPI + ChromaDB)
+# AI Study — 주차별 AI/아키텍처 실습 및 학습 로드맵
 
-주 1회 AI/아키텍처를 하나씩 직접 세팅해보며 정리하는 학습 기록. 1주차 주제는 RAG.
+주 1회 AI/아키텍처 프로젝트를 직접 구축해보며 기술적 이해와 IT 기획/아키텍처 관점의 실무 체크포인트를 정리하는 커리큘럼 저장소입니다.
 
-## 이번 주에 하고 싶었던 것
-"사내 문서 기반 챗봇 만들자"는 말이 실제로 어떤 컴포넌트로 쪼개지는지 손으로 확인하고 싶었다.
-그래서 가장 얇은 RAG 파이프라인을 직접 세워보기로 했다: `문서 → 임베딩 → 벡터DB 검색 → 답변`.
+---
 
-## 구성
-```
-week-01-rag-chatbot/
-├── PLANNING.md          # 구성하며 정리한 아키텍처 + 직접 밟은 실수 노트 ★
-├── requirements.txt
-├── README.md
-└── app/
-    ├── main.py          # FastAPI 진입점 (/chat)
-    ├── rag.py           # 인제스트 + 검색 코어
-    └── docs/            # 지식베이스 (.txt)
-```
+## 📅 주차별 학습 과제 목록 (Curriculum)
 
-## 실행
+| 주차 | 주제 | 핵심 키워드 & 기술 스택 | 링크 |
+|:---:|:---|:---|:---:|
+| **Week 01** | **최소 RAG 챗봇 직접 구성하기** | FastAPI, ChromaDB, SentenceTransformers, Vector Embeddings | [Week 01 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-01/README.md) |
+| **Week 02** | **RAG + LLM 연동 및 프롬프트/메모리 고도화** | LLM Provider (Mock/OpenAI/Ollama), Reranking, Session Memory, Guardrails | [Week 02 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-02/README.md) |
+
+---
+
+## 🚀 빠른 시작 (Quick Start)
+
+원하는 주차 폴더로 이동하여 독립된 Python 환경에서 실행할 수 있습니다:
+
+### Week 01 실행
 ```bash
+cd week-01
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-# http://127.0.0.1:8000/docs 에서 POST /chat 테스트
 ```
 
-## 직접 해보며 배운 것
-돌려보기 전엔 몰랐는데, 막상 세팅하니 사소한 데서 계속 막혔다. `PLANNING.md`에 그 과정을
-정리해뒀다. 특히 이번에 체감한 것들:
+### Week 02 실행
+```bash
+cd week-02
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
 
-- **add로 인제스트하니 재기동마다 문서가 중복 누적**됐다. 내용 해시를 ID로 써서 upsert로 바꾸니 해결.
-- 처음엔 문서와 질문을 **다른 임베딩 모델로 돌려서** 검색이 계속 엉뚱한 걸 물어왔다. 같은 모델로 통일.
-- Chroma가 돌려주는 게 유사도가 아니라 **거리**라 방향을 반대로 필터링해서 한참 헤맸다.
-- top-k는 관련 문서가 없어도 **뭐든 반환**한다는 걸 뒤늦게 알았다. 거리 임계값으로 컷하도록 수정.
+---
 
-## 다음 주 계획
-검색까지만 붙였으니, 다음엔 실제 LLM을 연결해 답변 생성 단계를 제대로 만들어볼 예정.
+## 💡 저장소 운영 규칙 (`drafts/`)
+- 매주 토요일 GitHub Actions 워크플로(`.github/workflows/weekly-publish.yml`)가 `drafts/` 창고에 준비된 다음 주차 학습 내용을 루트로 자동으로 공개 발행합니다.
+- 사전 준비 과제는 `drafts/week-XX` 형식으로 추가됩니다.
