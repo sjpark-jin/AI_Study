@@ -5,6 +5,21 @@
 ## 이번 주에 하고 싶었던 것
 1주차에 구축한 단순 문서 검색(Retrieval) 파이프라인 위에 **실제 LLM 연동, 재순위(Reranking), 대화 이력 유지(Session Memory), 환각 방지 가드레일**을 결합하여 실무에 즉시 적용 가능한 수준의 RAG 아키텍처를 세우는 것.
 
+## 🛠️ 사전 준비 및 환경 세팅 (Prerequisites & Installation)
+실행 전 저장소 루트에서 Python 가상환경(`venv`)을 활성화하고 필요 의존성 패키지를 설치합니다:
+
+```bash
+# 1. 저장소 루트로 이동 및 가상환경 생성 (최초 1회)
+cd /Users/sangjin/Desktop/workspace/AI_Study
+python3 -m venv venv
+
+# 2. 가상환경 활성화
+source venv/bin/activate
+
+# 3. 필수 패키지 설치
+pip install -r week-02/requirements.txt
+```
+
 ## 주요 기능
 1. **LLM Provider 추상화 (`llm.py`)**: API 키 없이도 로컬에서 즉시 구동되는 **Mock LLM Provider** 기본 탑재 (OpenAI / Ollama 연동 지원).
 2. **세션 대화 메모리 (`memory.py`)**: `session_id`별 대화 맥락을 기억하여 꼬리 질문("휴가 정책은? → 연차는 며칠이지?")에 정확히 대답.
@@ -16,6 +31,8 @@
 week-02/
 ├── PLANNING.md          # 2주차 아키텍처 + IT 기획 실수 노트 ★
 ├── requirements.txt
+├── .env.example         # 환경변수 템플릿
+├── .env                 # 환경변수 파일
 ├── README.md
 └── app/
     ├── main.py          # FastAPI 진입점 (/chat, /session, /health)
@@ -28,9 +45,9 @@ week-02/
 
 ## 실행
 ```bash
+# 가상환경 활성화 후 실행
+source venv/bin/activate
 cd week-02
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
 uvicorn app.main:app --reload
 # http://127.0.0.1:8000/docs 에서 POST /chat 테스트
 ```

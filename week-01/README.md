@@ -6,11 +6,28 @@
 "사내 문서 기반 챗봇 만들자"는 말이 실제로 어떤 컴포넌트로 쪼개지는지 손으로 확인하고 싶었다.
 그래서 가장 얇은 RAG 파이프라인을 직접 세워보기로 했다: `문서 → 임베딩 → 벡터DB 검색 → 답변`.
 
+## 🛠️ 사전 준비 및 환경 세팅 (Prerequisites & Installation)
+실행 전 저장소 루트에서 Python 가상환경(`venv`)을 활성화하고 필요 의존성 패키지를 설치합니다:
+
+```bash
+# 1. 저장소 루트로 이동 및 가상환경 생성 (최초 1회)
+cd /Users/sangjin/Desktop/workspace/AI_Study
+python3 -m venv venv
+
+# 2. 가상환경 활성화
+source venv/bin/activate
+
+# 3. 필수 패키지 설치
+pip install -r week-01/requirements.txt
+```
+
 ## 구성
 ```
 week-01/
 ├── PLANNING.md          # 구성하며 정리한 아키텍처 + 직접 밟은 실수 노트 ★
-├── requirements.txt
+├── requirements.txt     # 필요 패키지 목록
+├── .env.example         # 환경변수 템플릿
+├── .env                 # 환경변수 파일
 ├── README.md
 └── app/
     ├── main.py          # FastAPI 진입점 (/chat)
@@ -20,16 +37,14 @@ week-01/
 
 ## 실행
 ```bash
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
+# 가상환경 활성화 후 실행
+source venv/bin/activate
+cd week-01
 uvicorn app.main:app --reload
 # http://127.0.0.1:8000/docs 에서 POST /chat 테스트
 ```
 
 ## 직접 해보며 배운 것
-돌려보기 전엔 몰랐는데, 막상 세팅하니 사소한 데서 계속 막혔다. `PLANNING.md`에 그 과정을
-정리해뒀다. 특히 이번에 체감한 것들:
-
 - **add로 인제스트하니 재기동마다 문서가 중복 누적**됐다. 내용 해시를 ID로 써서 upsert로 바꾸니 해결.
 - 처음엔 문서와 질문을 **다른 임베딩 모델로 돌려서** 검색이 계속 엉뚱한 걸 물어왔다. 같은 모델로 통일.
 - Chroma가 돌려주는 게 유사도가 아니라 **거리**라 방향을 반대로 필터링해서 한참 헤맸다.

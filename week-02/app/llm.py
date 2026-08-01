@@ -1,12 +1,18 @@
 """
 LLM Provider 추상화 모듈.
-[실수 1 방어] API 키 없이도 즉시 테스트 가능한 Mock LLM Provider 기본 제공.
+.env 환경변수를 자동 로드하며, API 키 없이도 즉시 테스트 가능한 Mock LLM Provider 기본 제공.
 필요 시 OpenAI / Ollama / Custom API로 용이하게 확장 가능한 구조.
 """
 import logging
 import os
 from abc import ABC, abstractmethod
 from typing import List, Dict
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()  # .env 파일에서 환경변수 자동 로드
+except ImportError:
+    pass
 
 log = logging.getLogger("llm")
 
@@ -48,7 +54,7 @@ class MockLLMProvider(BaseLLMProvider):
 
 
 class OpenAIProvider(BaseLLMProvider):
-    """OpenAI API 연동 Provider (api_key 필요)."""
+    """OpenAI API 연동 Provider (OPENAI_API_KEY 필요)."""
     
     def __init__(self, api_key: str = None, model: str = "gpt-3.5-turbo"):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
@@ -56,7 +62,7 @@ class OpenAIProvider(BaseLLMProvider):
 
     def generate(self, system_prompt: str, history: List[Dict[str, str]], question: str, context: str) -> str:
         if not self.api_key:
-            return "[Error] OPENAI_API_KEY가 설정되지 않았습니다. Mock Provider를 사용하거나 환경변수를 세팅해주세요."
+            return "[Error] OPENAI_API_KEY가 설정되지 않았습니다. .env 파일에 OPENAI_API_KEY를 기입하거나 Mock Provider를 사용해주세요."
         try:
             import requests
             messages = [{"role": "system", "content": f"{system_prompt}\n\n[참조 컨텍스트]:\n{context}"}]
@@ -77,8 +83,10 @@ class OpenAIProvider(BaseLLMProvider):
             return f"[LLM Error] OpenAI 연동 실패: {str(e)}"
 
 
-def get_llm_provider(provider_type: str = "mock") -> BaseLLMProvider:
-    """설정에 따라 적절한 LLM Provider 객체 반환."""
+def get_llm_provider(provider_type: str = None) -> BaseLLMProvider:
+    """.env 설정 또는 전달받은 파라미터에 따라 적절한 LLM Provider 객체 반환."""
+    if not provider_type:
+        provider_type = os.getenv("DEFAULT_LLM_PROVIDER", "mock")
     provider_type = provider_type.lower()
     if provider_type == "openai":
         return OpenAIProvider()

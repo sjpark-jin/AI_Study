@@ -1,4 +1,21 @@
+# Virtual Environments
 venv/
+**/venv/
+.venv/
+**/.venv/
+
+# Python Cache & Compiled Files
 __pycache__/
+**/__pycache__/
 *.pyc
+
+# Vector Database Data
 chroma_db/
+**/chroma_db/
+*.sqlite3
+
+# Environment Variables & Keys
+.env
+.env.local
+.env.*.local
+!.env.example
