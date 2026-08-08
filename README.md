@@ -4,7 +4,7 @@
 
 ---
 
-## 🛠️ 사전 준비 및 환경 세팅 가이드 (Prerequisites & Setup)
+## 🛠️ 사전 준비 및 환경 세팅 (Prerequisites & Setup)
 
 macOS 및 최신 Python 환경(PEP 668)에서는 외부 패키지 설치 시 가상환경(`venv`) 생성이 필수적입니다.
 아래 순서대로 가상환경을 세팅하고 필수 의존성 패키지를 설치한 후 실행해주세요.
@@ -28,7 +28,7 @@ source venv/bin/activate
 ```bash
 # 가상환경이 활성화된 상태에서 패키지 설치
 pip install --upgrade pip
-pip install -r week-03/requirements.txt
+pip install -r week-04/requirements.txt
 ```
 
 > 💡 **VS Code / Cursor IDE 사용 팁**:
@@ -38,7 +38,7 @@ pip install -r week-03/requirements.txt
 ---
 
 ## 🔑 환경변수 설정 (`.env`)
-각 주차 폴더(`week-01`, `week-02`, `week-03`)에는 주요 AI API 키 이름이 사전 등록된 `.env.example` 및 `.env` 파일이 포함되어 있습니다.
+각 주차 폴더(`week-01`, `week-02`, `week-03`, `week-04`)에는 주요 AI API 키 이름이 사전 등록된 `.env.example` 및 `.env` 파일이 포함되어 있습니다.
 필요 시 보유하신 API 키를 `.env` 파일에 기입하여 바로 연동하실 수 있으며, 키가 없어도 모든 주차는 **Mock Provider**를 통해 즉시 실습 및 테스트 가능합니다.
 
 - `OPENAI_API_KEY`
@@ -59,6 +59,7 @@ pip install -r week-03/requirements.txt
 | **Week 01** | **최소 RAG 챗봇 직접 구성하기** | FastAPI, ChromaDB, SentenceTransformers, Vector Embeddings | [Week 01 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-01/README.md) |
 | **Week 02** | **RAG + LLM 연동 및 프롬프트/메모리 고도화** | LLM Provider (Mock/OpenAI), Reranking, Session Memory, Guardrails | [Week 02 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-02/README.md) |
 | **Week 03** | **AI Agent & Function Calling 구축** | ReAct Pattern, Tool Execution, DB/Email/RAG Integration, `.env` Setup | [Week 03 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-03/README.md) |
+| **Week 04** | **Multi-Agent 협업 및 워크플로 상태 관리** | Multi-Agent Orchestration, Planner-Researcher-Reviewer, State Machine | [Week 04 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-04/README.md) |
 
 ---
 
@@ -71,7 +72,6 @@ pip install -r week-03/requirements.txt
 source venv/bin/activate
 cd week-01
 uvicorn app.main:app --reload
-# 접속: http://127.0.0.1:8000/docs
 ```
 
 ### Week 02 실행 (RAG + LLM + Memory)
@@ -79,7 +79,6 @@ uvicorn app.main:app --reload
 source venv/bin/activate
 cd week-02
 uvicorn app.main:app --reload
-# 접속: http://127.0.0.1:8000/docs
 ```
 
 ### Week 03 실행 (AI Agent & Function Calling)
@@ -87,7 +86,13 @@ uvicorn app.main:app --reload
 source venv/bin/activate
 cd week-03
 uvicorn app.main:app --reload
-# 접속: http://127.0.0.1:8000/docs
+```
+
+### Week 04 실행 (Multi-Agent System)
+```bash
+source venv/bin/activate
+cd week-04
+uvicorn app.main:app --reload
 ```
 
 ---

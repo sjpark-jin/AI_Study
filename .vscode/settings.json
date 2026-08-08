@@ -1,0 +1,14 @@
+{
+  "python.defaultInterpreterPath": "/Users/sangjin/Desktop/workspace/AI_Study/venv/bin/python",
+  "python.pythonPath": "/Users/sangjin/Desktop/workspace/AI_Study/venv/bin/python",
+  "python.analysis.extraPaths": [
+    "/Users/sangjin/Desktop/workspace/AI_Study/venv/lib/python3.13/site-packages"
+  ],
+  "pyright.analysis.extraPaths": [
+    "/Users/sangjin/Desktop/workspace/AI_Study/venv/lib/python3.13/site-packages"
+  ],
+  "pyrefly.searchPaths": [
+    "/Users/sangjin/Desktop/workspace/AI_Study/venv/lib/python3.13/site-packages"
+  ],
+  "python.analysis.autoSearchPaths": true
+}
