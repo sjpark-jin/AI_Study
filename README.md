@@ -28,7 +28,7 @@ source venv/bin/activate
 ```bash
 # 가상환경이 활성화된 상태에서 패키지 설치
 pip install --upgrade pip
-pip install -r week-04/requirements.txt
+pip install -r week-05/requirements.txt
 ```
 
 > 💡 **VS Code / Cursor IDE 사용 팁**:
@@ -38,7 +38,7 @@ pip install -r week-04/requirements.txt
 ---
 
 ## 🔑 환경변수 설정 (`.env`)
-각 주차 폴더(`week-01`, `week-02`, `week-03`, `week-04`)에는 주요 AI API 키 이름이 사전 등록된 `.env.example` 및 `.env` 파일이 포함되어 있습니다.
+각 주차 폴더(`week-01`, `week-02`, `week-03`, `week-04`, `week-05`)에는 주요 AI API 키 이름이 사전 등록된 `.env.example` 및 `.env` 파일이 포함되어 있습니다.
 필요 시 보유하신 API 키를 `.env` 파일에 기입하여 바로 연동하실 수 있으며, 키가 없어도 모든 주차는 **Mock Provider**를 통해 즉시 실습 및 테스트 가능합니다.
 
 - `OPENAI_API_KEY`
@@ -60,6 +60,7 @@ pip install -r week-04/requirements.txt
 | **Week 02** | **RAG + LLM 연동 및 프롬프트/메모리 고도화** | LLM Provider (Mock/OpenAI), Reranking, Session Memory, Guardrails | [Week 02 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-02/README.md) |
 | **Week 03** | **AI Agent & Function Calling 구축** | ReAct Pattern, Tool Execution, DB/Email/RAG Integration, `.env` Setup | [Week 03 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-03/README.md) |
 | **Week 04** | **Multi-Agent 협업 및 워크플로 상태 관리** | Multi-Agent Orchestration, Planner-Researcher-Reviewer, State Machine | [Week 04 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-04/README.md) |
+| **Week 05** | **Evaluator-Optimizer 루프 및 LLM Observability** | LLM-as-a-Judge, Guardrails Auditing, Evaluator-Optimizer Loop, Step Tracing | [Week 05 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-05/README.md) |
 
 ---
 
@@ -95,7 +96,15 @@ cd week-04
 uvicorn app.main:app --reload
 ```
 
+### Week 05 실행 (Evaluator-Optimizer & Observability)
+```bash
+source venv/bin/activate
+cd week-05
+uvicorn app.main:app --reload
+```
+
 ---
 
 ## 💡 저장소 운영 규칙 (`drafts/`)
 - 매주 토요일 GitHub Actions 워크플로(`.github/workflows/weekly-publish.yml`)가 `drafts/` 창고에 준비된 다음 주차 학습 내용을 루트로 자동으로 공개 발행합니다.
+
