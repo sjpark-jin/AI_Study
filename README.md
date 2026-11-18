@@ -61,6 +61,8 @@ pip install -r week-05/requirements.txt
 | **Week 03** | **AI Agent & Function Calling 구축** | ReAct Pattern, Tool Execution, DB/Email/RAG Integration, `.env` Setup | [Week 03 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-03/README.md) |
 | **Week 04** | **Multi-Agent 협업 및 워크플로 상태 관리** | Multi-Agent Orchestration, Planner-Researcher-Reviewer, State Machine | [Week 04 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-04/README.md) |
 | **Week 05** | **Evaluator-Optimizer 루프 및 LLM Observability** | LLM-as-a-Judge, Guardrails Auditing, Evaluator-Optimizer Loop, Step Tracing | [Week 05 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-05/README.md) |
+| **Week 06** | **Advanced Hybrid RAG 및 RAG 정량 평가 시스템** | BM25, Dense Vector, RRF (Rank Fusion), Cross-Encoder Reranker, Ragas Triad | [Week 06 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-06/README.md) |
+| **Week 07** | **TypeSafe AI Jev (System One) 정형 의사결정 & 확률적 워크플로 라우팅** | TypeSafe AI Jev (`system_one`), `Choice` · `Score` · `Noul`, Confidence Gate, HITL | [Week 07 이동](file:///Users/sangjin/Desktop/workspace/AI_Study/week-07/README.md) |
 
 ---
 
@@ -101,6 +103,24 @@ uvicorn app.main:app --reload
 source venv/bin/activate
 cd week-05
 uvicorn app.main:app --reload
+```
+
+### Week 06 실행 (Advanced Hybrid RAG & RAG Evaluation)
+```bash
+source venv/bin/activate
+cd week-06
+uvicorn app.main:app --reload
+# 대화형 학습 웹 UI: http://127.0.0.1:8000
+# Swagger API 문서: http://127.0.0.1:8000/docs
+```
+
+### Week 07 실행 (TypeSafe AI Jev — System One Decision & Routing)
+```bash
+source venv/bin/activate
+cd week-07
+uvicorn app.main:app --reload
+# 대화형 학습 웹 UI: http://127.0.0.1:8000
+# Swagger API 문서: http://127.0.0.1:8000/docs
 ```
 
 ---

@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenWiki — 우리 모두의 AI 지식 백과</title>
+  <style>
+    :root {
+      --bg-page: #f8f9fa;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8f9fa;
+      --bg-hover: #eaecf0;
+      --border: #a2a9b1;
+      --border-light: #eaecf0;
+      --text-main: #202122;
+      --text-muted: #54595d;
+      --link: #3366cc;
+      --link-hover: #2a4b8d;
+      --link-visited: #795cb2;
+      --code-bg: #f6f8fa;
+      --code-border: #d0d7de;
+      --infobox-header: #cedff2;
+      --toc-bg: #f8f9fa;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      --font-serif: "Linux Libertine", "Georgia", "Times New Roman", "Noto Serif KR", serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    body.dark {
+      --bg-page: #101418;
+      --bg-surface: #15191e;
+      --bg-subtle: #1b2028;
+      --bg-hover: #242b35;
+      --border: #3a4149;
+      --border-light: #272d35;
+      --text-main: #eaecf0;
+      --text-muted: #a2a9b1;
+      --link: #6b9eff;
+      --link-hover: #9abaff;
+      --code-bg: #0d1117;
+      --code-border: #30363d;
+      --infobox-header: #1f334d;
+      --toc-bg: #1b2028;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+
+    a { color: var(--link); text-decoration: none; cursor: pointer; }
+    a:hover { text-decoration: underline; color: var(--link-hover); }
+
+    /* Top Wikipedia Header */
+    .wiki-topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .wiki-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      min-width: 210px;
+    }
+    .wiki-globe {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ffffff, #d9dfe6 60%, #9aa3ad);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 19px;
+      color: #202122;
+      flex-shrink: 0;
+    }
+    .wiki-brand-title {
+      font-family: var(--font-serif);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      line-height: 1.1;
+    }
+    .wiki-brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Search Bar */
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      max-width: 520px;
+    }
+    .search-box {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      background: var(--bg-surface);
+      overflow: hidden;
+    }
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 7px 12px;
+      font-size: 14px;
+      background: transparent;
+      color: var(--text-main);
+    }
+    .search-box button {
+      border: none;
+      border-left: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .search-box button:hover { background: var(--bg-hover); }
+
+    .search-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      z-index: 50;
+      display: none;
+      max-height: 360px;
+      overflow-y: auto;
+    }
+    .search-dropdown.open { display: block; }
+    .search-item {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+    }
+    .search-item:hover { background: var(--bg-hover); }
+    .search-item-title { font-weight: 600; font-size: 14px; color: var(--link); }
+    .search-item-snippet { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-wiki {
+      border: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 2px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-wiki:hover { background: var(--bg-hover); border-color: var(--border); }
+    .btn-wiki-primary {
+      background: #3366cc;
+      color: #fff;
+      border-color: #3366cc;
+    }
+    .btn-wiki-primary:hover { background: #2a4b8d; }
+
+    /* Main Layout */
+    .wiki-shell {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 245px 1fr;
+      gap: 0;
+      min-height: calc(100vh - 60px);
+    }
+    @media (max-width: 900px) {
+      .wiki-shell { grid-template-columns: 1fr; }
+      .wiki-sidebar { display: none; }
+      .wiki-sidebar.mobile-open { display: block; }
+    }
+
+    /* Left Sidebar */
+    .wiki-sidebar {
+      padding: 20px 16px;
+      border-right: 1px solid var(--border-light);
+      background: var(--bg-page);
+      font-size: 13.5px;
+    }
+    .sidebar-section {
+      margin-bottom: 20px;
+    }
+    .sidebar-heading {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .sidebar-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .sidebar-list li {
+      margin-bottom: 4px;
+    }
+    .sidebar-link {
+      display: block;
+      padding: 4px 8px;
+      border-radius: 3px;
+      color: var(--link);
+      font-size: 13px;
+    }
+    .sidebar-link:hover {
+      background: var(--bg-hover);
+      text-decoration: none;
+    }
+    .sidebar-link.active {
+      background: var(--bg-hover);
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* Article Canvas */
+    .wiki-main {
+      background: var(--bg-surface);
+      padding: 28px 40px 48px;
+      min-width: 0;
+    }
+    @media (max-width: 640px) {
+      .wiki-main { padding: 20px 18px; }
+    }
+
+    .article-tabs {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+      font-size: 13px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .article-tab-group {
+      display: flex;
+      gap: 14px;
+    }
+    .article-tab {
+      padding: 4px 2px;
+      color: var(--link);
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    .article-tab.active {
+      color: var(--text-main);
+      border-bottom-color: var(--text-main);
+    }
+
+    .article-title {
+      font-family: var(--font-serif);
+      font-size: 30px;
+      font-weight: 400;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+      margin: 0 0 6px 0;
+      line-height: 1.25;
+    }
+    .article-tagline {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Infobox (Right Floating Card like Wikipedia) */
+    .infobox {
+      float: right;
+      width: 290px;
+      margin: 0 0 18px 24px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 13px;
+      border-collapse: collapse;
+    }
+    @media (max-width: 780px) {
+      .infobox { float: none; width: 100%; margin: 0 0 18px 0; }
+    }
+    .infobox-title {
+      background: var(--infobox-header);
+      text-align: center;
+      font-weight: 700;
+      padding: 8px 10px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .infobox table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .infobox th, .infobox td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-light);
+      text-align: left;
+      vertical-align: top;
+    }
+    .infobox th {
+      width: 38%;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Table of Contents Box */
+    .toc-box {
+      display: inline-block;
+      min-width: 240px;
+      max-width: 100%;
+      background: var(--toc-bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      margin: 8px 0 20px 0;
+      font-size: 13px;
+    }
+    .toc-title {
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 13.5px;
+    }
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .toc-list li { margin: 3px 0; }
+    .toc-lvl-2 { padding-left: 0; }
+    .toc-lvl-3 { padding-left: 16px; }
+    .toc-lvl-4 { padding-left: 32px; }
+
+    /* Rendered Markdown Content */
+    .wiki-content h1, .wiki-content h2, .wiki-content h3, .wiki-content h4 {
+      font-family: var(--font-serif);
+      font-weight: 400;
+      margin-top: 22px;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .wiki-content h2 {
+      font-size: 22px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 4px;
+    }
+    .wiki-content h3 { font-size: 18px; font-weight: 600; font-family: var(--font-sans); }
+    .wiki-content p { margin: 10px 0; }
+    .wiki-content ul, .wiki-content ol { margin: 8px 0 12px 24px; }
+    .wiki-content li { margin-bottom: 4px; }
+    .wiki-content code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+    .wiki-content pre {
+      background: var(--code-bg);
+      border: 1px solid var(--code-border);
+      padding: 14px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.5;
+      margin: 14px 0;
+    }
+    .wiki-content pre code {
+      border: none;
+      background: transparent;
+      padding: 0;
+    }
+    .wiki-content table {
+      border-collapse: collapse;
+      margin: 14px 0;
+      width: 100%;
+      font-size: 13.5px;
+    }
+    .wiki-content table th, .wiki-content table td {
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      text-align: left;
+    }
+    .wiki-content table th {
+      background: var(--bg-subtle);
+      font-weight: 700;
+    }
+    .wiki-content blockquote {
+      border-left: 4px solid var(--border);
+      margin: 12px 0;
+      padding: 4px 14px;
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+    }
+    .wiki-content hr {
+      border: none;
+      border-top: 1px solid var(--border-light);
+      margin: 20px 0;
+    }
+
+    /* Footer Tags & Backlinks */
+    .wiki-footer-box {
+      clear: both;
+      margin-top: 32px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      padding: 14px 18px;
+      font-size: 13px;
+    }
+    .tag-pill {
+      display: inline-block;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-right: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 480px;
+      padding: 22px;
+      border-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .modal-card h3 { margin: 0 0 12px 0; font-size: 18px; }
+    .form-row { margin-bottom: 12px; }
+    .form-row label { display: block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted); }
+    .form-row input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-page);
+      color: var(--text-main);
+      border-radius: 2px;
+      font-size: 13.5px;
+    }
+  </style>
+</head>
+<body>
+
+<header class="wiki-topbar">
+  <div class="wiki-brand" onclick="loadPage('index')">
+    <div class="wiki-globe">W</div>
+    <div>
+      <div class="wiki-brand-title">OpenWiki</div>
+      <div class="wiki-brand-sub">LangChain OKF 지식 백과</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <input type="text" id="wiki-search-input" placeholder="OpenWiki 문서 검색 (예: RAG, Jev, EC2)..." oninput="handleSearchInput()" onkeydown="if(event.key==='Enter') handleSearchInput()" />
+      <button onclick="handleSearchInput()">검색</button>
+    </div>
+    <div id="search-dropdown" class="search-dropdown"></div>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn-wiki" onclick="loadRandomPage()">🎲 임의 문서</button>
+    <button class="btn-wiki btn-wiki-primary" onclick="openSyncModal()">🔄 GitHub 동기화</button>
+    <button class="btn-wiki" onclick="toggleTheme()">🌓 테마</button>
+  </div>
+</header>
+
+<div class="wiki-shell">
+  <aside class="wiki-sidebar" id="wiki-sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">둘러보기</div>
+      <ul class="sidebar-list">
+        <li><a class="sidebar-link" onclick="loadPage('index')">🏠 대문 (index.md)</a></li>
+        <li><a class="sidebar-link" onclick="loadPage('logs')">📜 변경 로그 (logs.md)</a></li>
+        <li><a class="sidebar-link" onclick="loadRandomPage()">🎲 임의의 문서로</a></li>
+      </ul>
+    </div>
+
+    <div id="sidebar-categories"></div>
+
+    <div class="sidebar-section" style="margin-top:24px; font-size:12px; color:var(--text-muted);">
+      <div class="sidebar-heading">저장소 정보</div>
+      <div id="sidebar-stats">불러오는 중...</div>
+    </div>
+  </aside>
+
+  <main class="wiki-main">
+    <div class="article-tabs">
+      <div class="article-tab-group">
+        <span class="article-tab active" id="tab-read" onclick="setViewMode('read')">문서 읽기</span>
+        <span class="article-tab" id="tab-source" onclick="setViewMode('source')">원본 마크다운 (.md)</span>
+      </div>
+      <div style="font-size:12px; color:var(--text-muted);" id="article-filepath">-</div>
+    </div>
+
+    <h1 class="article-title" id="article-title">불러오는 중...</h1>
+    <div class="article-tagline" id="article-tagline">OpenWiki, 우리 모두의 AI 지식 백과</div>
+
+    <div id="article-read-view">
+      <div id="infobox-container"></div>
+      <div id="toc-container"></div>
+      <div class="wiki-content" id="wiki-content"></div>
+    </div>
+
+    <div id="article-source-view" style="display:none;">
+      <pre id="raw-markdown-view" style="background:var(--code-bg); border:1px solid var(--code-border); padding:16px; overflow-x:auto; font-family:var(--font-mono); font-size:13px;"></pre>
+    </div>
+
+    <div class="wiki-footer-box" id="wiki-footer-box">
+      <div id="footer-tags" style="margin-bottom:10px;"></div>
+      <div id="footer-backlinks"></div>
+    </div>
+  </main>
+</div>
+
+<!-- GitHub Sync Modal -->
+<div class="modal-backdrop" id="sync-modal">
+  <div class="modal-card">
+    <h3>🔄 GitHub OpenWiki 폴더 동기화</h3>
+    <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+      GitHub 저장소 내 OpenWiki(<code>.md</code>) 폴더를 실시간으로 불러와 위키피디아 포털에 반영합니다.
+    </p>
+    <div class="form-row">
+      <label>GitHub 저장소 (owner/repo)</label>
+      <input type="text" id="sync-repo" placeholder="예: langchain-ai/openwiki" />
+    </div>
+    <div class="form-row">
+      <label>브랜치 (Branch)</label>
+      <input type="text" id="sync-branch" value="main" />
+    </div>
+    <div class="form-row">
+      <label>위키 폴더 경로 (Folder Path)</label>
+      <input type="text" id="sync-folder" value="openwiki" />
+    </div>
+    <div id="sync-status-msg" style="font-size:12.5px; margin-bottom:12px;"></div>
+    <div style="display:flex; justify-content:flex-end; gap:8px;">
+      <button class="btn-wiki" onclick="triggerLocalReload()">로컬 폴더 재스캔</button>
+      <button class="btn-wiki" onclick="closeSyncModal()">닫기</button>
+      <button class="btn-wiki btn-wiki-primary" onclick="triggerGithubSync()">GitHub에서 가져오기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let STATIC_BUNDLE = null;
+  let CURRENT_SLUG = 'index';
+  let CURRENT_PAGE = null;
+  let VIEW_MODE = 'read';
+
+  // --- Dual Mode Data Fetcher (FastAPI Backend OR Static wiki-data.json Fallback) ---
+  async function apiGetTree() {
+    try {
+      const res = await fetch('/api/wiki/tree');
+      if (res.ok) return await res.json();
+    } catch (_) {}
+    const bundle = await loadStaticBundle();
+    return bundle.tree;
+  }
+
+  async function apiGetPage(slug) {
+    try {
+      const res = await fetch(`/api/wiki/page?slug=${encodeURIComponent(slug)}`);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+    const bundle = await loadStaticBundle();
+    return bundle.pages[slug] || bundle.pages['index'];
+  }
+
+  async function apiSearch(q) {
+    try {
+      const res = await fetch(`/api/wiki/search?q=${encodeURIComponent(q)}`);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+    const bundle = await loadStaticBundle();
+    const ql = q.toLowerCase();
+    const results = Object.values(bundle.pages)
+      .filter(p => p.title.toLowerCase().includes(ql) || p.content.toLowerCase().includes(ql))
+      .map(p => ({ slug: p.slug, title: p.title, category: p.category, snippet: p.summary || p.content.slice(0, 120) }));
+    return { query: q, results };
+  }
+
+  async function loadStaticBundle() {
+    if (STATIC_BUNDLE) return STATIC_BUNDLE;
+    const res = await fetch('./wiki-data.json');
+    STATIC_BUNDLE = await res.json();
+    return STATIC_BUNDLE;
+  }
+
+  // --- Lightweight Wikipedia Markdown Renderer ---
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function slugifyHeading(text) {
+    return text.replace(/`([^`]+)`/g, '$1').trim().toLowerCase()
+      .replace(/[^\w\s가-힣-]/g, '').replace(/\s+/g, '-');
+  }
+
+  function formatInline(text, currentSlug) {
+    let out = escapeHtml(text);
+    // Inline code
+    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold & Italic
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    // [[slug|label]] or [[slug]]
+    out = out.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, target, label) => {
+      const cleanSlug = target.replace(/\.md$/, '').trim();
+      const display = (label || target).trim();
+      return `<a onclick="loadPage('${cleanSlug}')">${display}</a>`;
+    });
+    // [label](url)
+    out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, href) => {
+      if (href.startsWith('http://') || href.startsWith('https://')) {
+        return `<a href="${href}" target="_blank" rel="noopener">${label} ↗</a>`;
+      }
+      const cleanSlug = href.replace(/\.md(#.*)?$/, '').replace(/^\.\//, '');
+      return `<a onclick="loadPage('${cleanSlug}')">${label}</a>`;
+    });
+    return out;
+  }
+
+  function renderMarkdown(md, currentSlug) {
+    const lines = md.replace(/\r\n/g, '\n').split('\n');
+    let html = [];
+    let inCode = false;
+    let codeBuf = [];
+    let inList = null; // 'ul' | 'ol'
+    let inTable = false;
+    let tableRows = [];
+
+    function flushList() {
+      if (inList) {
+        html.push(`</${inList}>`);
+        inList = null;
+      }
+    }
+    function flushTable() {
+      if (!inTable) return;
+      let t = '<table><thead><tr>';
+      const headers = tableRows[0];
+      headers.forEach(h => t += `<th>${formatInline(h, currentSlug)}</th>`);
+      t += '</tr></thead><tbody>';
+      for (let i = 2; i < tableRows.length; i++) {
+        t += '<tr>';
+        tableRows[i].forEach(c => t += `<td>${formatInline(c, currentSlug)}</td>`);
+        t += '</tr>';
+      }
+      t += '</tbody></table>';
+      html.push(t);
+      inTable = false;
+      tableRows = [];
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.trim().startsWith('```')) {
+        flushList();
+        flushTable();
+        if (!inCode) {
+          inCode = true;
+          codeBuf = [];
+        } else {
+          html.push(`<pre><code>${escapeHtml(codeBuf.join('\n'))}</code></pre>`);
+          inCode = false;
+        }
+        continue;
+      }
+      if (inCode) {
+        codeBuf.push(line);
+        continue;
+      }
+
+      // Table detection
+      if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+        flushList();
+        const cells = line.trim().slice(1, -1).split('|').map(c => c.trim());
+        inTable = true;
+        tableRows.push(cells);
+        continue;
+      } else {
+        flushTable();
+      }
+
+      const trimmed = line.trim();
+      if (!trimmed) {
+        flushList();
+        continue;
+      }
+      if (trimmed === '---' || trimmed === '***') {
+        flushList();
+        html.push('<hr />');
+        continue;
+      }
+
+      // Headings
+      const hMatch = line.match(/^(#{1,4})\s+(.+)$/);
+      if (hMatch) {
+        flushList();
+        const lvl = hMatch[1].length;
+        const text = hMatch[2].trim();
+        // Skip duplicate top H1 if it matches article title
+        if (lvl === 1 && html.length === 0) continue;
+        const anchor = slugifyHeading(text);
+        html.push(`<h${lvl} id="${anchor}">${formatInline(text, currentSlug)}</h${lvl}>`);
+        continue;
+      }
+
+      // Blockquote
+      if (trimmed.startsWith('> ')) {
+        flushList();
+        html.push(`<blockquote>${formatInline(trimmed.slice(2), currentSlug)}</blockquote>`);
+        continue;
+      }
+
+      // Unordered list
+      if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+        if (inList !== 'ul') {
+          flushList();
+          inList = 'ul';
+          html.push('<ul>');
+        }
+        html.push(`<li>${formatInline(trimmed.slice(2), currentSlug)}</li>`);
+        continue;
+      }
+
+      // Ordered list
+      const olMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+      if (olMatch) {
+        if (inList !== 'ol') {
+          flushList();
+          inList = 'ol';
+          html.push('<ol>');
+        }
+        html.push(`<li>${formatInline(olMatch[1], currentSlug)}</li>`);
+        continue;
+      }
+
+      flushList();
+      html.push(`<p>${formatInline(trimmed, currentSlug)}</p>`);
+    }
+    flushList();
+    flushTable();
+    return html.join('\n');
+  }
+
+  // --- UI Rendering ---
+  async function loadTree() {
+    const tree = await apiGetTree();
+    const catWrap = document.getElementById('sidebar-categories');
+    let html = '';
+    for (const [cat, items] of Object.entries(tree.categories || {})) {
+      if (cat === '대문' || cat === '메타') continue;
+      html += `<div class="sidebar-section"><div class="sidebar-heading">${cat}</div><ul class="sidebar-list">`;
+      items.forEach(item => {
+        const activeCls = item.slug === CURRENT_SLUG ? 'active' : '';
+        html += `<li><a class="sidebar-link ${activeCls}" onclick="loadPage('${item.slug}')">${item.title}</a></li>`;
+      });
+      html += '</ul></div>';
+    }
+    catWrap.innerHTML = html;
+
+    document.getElementById('sidebar-stats').innerHTML = `
+      <div>총 문서 수: <strong>${tree.total_pages}개</strong></div>
+      <div>소스: <code>${tree.source_info?.mode || 'local'}</code></div>
+      <div style="margin-top:4px; word-break:break-all;">${tree.last_synced_at || ''}</div>
+    `;
+  }
+
+  async function loadPage(slug) {
+    CURRENT_SLUG = slug || 'index';
+    document.getElementById('search-dropdown').classList.remove('open');
+    const page = await apiGetPage(CURRENT_SLUG);
+    CURRENT_PAGE = page;
+
+    document.title = `${page.title} — OpenWiki`;
+    document.getElementById('article-title').innerText = page.title;
+    document.getElementById('article-filepath').innerText = `📄 openwiki/${page.file_path}`;
+    document.getElementById('article-tagline').innerText =
+      `OpenWiki OKF v${page.okf_version} · 분류: ${page.category}` + (page.updated ? ` · 최종 수정: ${page.updated}` : '');
+
+    // Infobox
+    const infoEntries = Object.entries(page.infobox || {});
+    if (infoEntries.length > 0) {
+      let rows = infoEntries.map(([k, v]) => `<tr><th>${escapeHtml(k)}</th><td>${escapeHtml(v)}</td></tr>`).join('');
+      document.getElementById('infobox-container').innerHTML = `
+        <div class="infobox">
+          <div class="infobox-title">${escapeHtml(page.title)}</div>
+          <table>${rows}</table>
+        </div>
+      `;
+    } else {
+      document.getElementById('infobox-container').innerHTML = '';
+    }
+
+    // Table of Contents
+    const tocHeadings = (page.headings || []).filter(h => h.level >= 2);
+    if (tocHeadings.length > 0) {
+      const tocItems = tocHeadings.map((h, i) => `
+        <li class="toc-lvl-${h.level}">
+          <a href="#${h.anchor}">${i + 1}. ${escapeHtml(h.text)}</a>
+        </li>
+      `).join('');
+      document.getElementById('toc-container').innerHTML = `
+        <div class="toc-box">
+          <div class="toc-title">목차</div>
+          <ul class="toc-list">${tocItems}</ul>
+        </div>
+      `;
+    } else {
+      document.getElementById('toc-container').innerHTML = '';
+    }
+
+    // Main Content & Raw Source
+    document.getElementById('wiki-content').innerHTML = renderMarkdown(page.content, page.slug);
+    document.getElementById('raw-markdown-view').innerText = page.content;
+
+    // Tags & Backlinks
+    const tagsHtml = (page.tags || []).map(t => `<span class="tag-pill">#${escapeHtml(t)}</span>`).join('');
+    document.getElementById('footer-tags').innerHTML = `<strong>분류/태그:</strong> ${tagsHtml || '없음'}`;
+
+    const backlinks = page.backlinks || [];
+    if (backlinks.length > 0) {
+      const blHtml = backlinks.map(b => `<a onclick="loadPage('${b.slug}')" style="margin-right:12px;">🔗 ${escapeHtml(b.title)}</a>`).join('');
+      document.getElementById('footer-backlinks').innerHTML = `<strong>이 문서를 참조하는 문서 (Backlinks):</strong> ${blHtml}`;
+    } else {
+      document.getElementById('footer-backlinks').innerHTML = `<strong>이 문서를 참조하는 문서 (Backlinks):</strong> <span style="color:var(--text-muted);">없음</span>`;
+    }
+
+    window.location.hash = page.slug;
+    loadTree();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setViewMode(mode) {
+    VIEW_MODE = mode;
+    document.getElementById('tab-read').classList.toggle('active', mode === 'read');
+    document.getElementById('tab-source').classList.toggle('active', mode === 'source');
+    document.getElementById('article-read-view').style.display = mode === 'read' ? 'block' : 'none';
+    document.getElementById('article-source-view').style.display = mode === 'source' ? 'block' : 'none';
+  }
+
+  let searchTimer = null;
+  function handleSearchInput() {
+    clearTimeout(searchTimer);
+    const q = document.getElementById('wiki-search-input').value.trim();
+    const dd = document.getElementById('search-dropdown');
+    if (!q) {
+      dd.classList.remove('open');
+      return;
+    }
+    searchTimer = setTimeout(async () => {
+      const data = await apiSearch(q);
+      if (!data.results || data.results.length === 0) {
+        dd.innerHTML = `<div class="search-item"><div class="search-item-snippet">'${escapeHtml(q)}'에 대한 검색 결과가 없습니다.</div></div>`;
+      } else {
+        dd.innerHTML = data.results.map(r => `
+          <div class="search-item" onclick="loadPage('${r.slug}')">
+            <div class="search-item-title">${escapeHtml(r.title)} <span style="font-size:11px; color:var(--text-muted);">(${escapeHtml(r.category)})</span></div>
+            <div class="search-item-snippet">${escapeHtml(r.snippet)}</div>
+          </div>
+        `).join('');
+      }
+      dd.classList.add('open');
+    }, 180);
+  }
+
+  async function loadRandomPage() {
+    try {
+      const res = await fetch('/api/wiki/random');
+      if (res.ok) {
+        const data = await res.json();
+        return loadPage(data.slug);
+      }
+    } catch (_) {}
+    const tree = await apiGetTree();
+    const slugs = tree.all_slugs || ['index'];
+    loadPage(slugs[Math.floor(Math.random() * slugs.length)]);
+  }
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark');
+  }
+
+  function openSyncModal() {
+    document.getElementById('sync-status-msg').innerText = '';
+    document.getElementById('sync-modal').classList.add('open');
+  }
+  function closeSyncModal() {
+    document.getElementById('sync-modal').classList.remove('open');
+  }
+
+  async function triggerLocalReload() {
+    const msg = document.getElementById('sync-status-msg');
+    msg.innerText = '로컬 openwiki/ 폴더 재스캔 중...';
+    const res = await fetch('/api/wiki/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'local' })
+    });
+    const data = await res.json();
+    msg.innerText = `✅ 완료: 총 ${data.total_indexed_pages}개 문서 색인됨`;
+    loadPage(CURRENT_SLUG);
+  }
+
+  async function triggerGithubSync() {
+    const repo = document.getElementById('sync-repo').value.trim();
+    const branch = document.getElementById('sync-branch').value.trim() || 'main';
+    const folder = document.getElementById('sync-folder').value.trim() || 'openwiki';
+    const msg = document.getElementById('sync-status-msg');
+    if (!repo) {
+      msg.innerText = '⚠️ owner/repo 형식으로 저장소를 입력해주세요.';
+      return;
+    }
+    msg.innerText = 'GitHub API에서 .md 파일을 가져오는 중...';
+    const res = await fetch('/api/wiki/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'github', repo, branch, folder_path: folder })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      msg.innerText = `❌ 오류: ${data.detail}`;
+      return;
+    }
+    msg.innerText = `✅ ${data.downloaded_count}개 .md 파일 동기화 완료! (총 ${data.total_indexed_pages}개)`;
+    loadPage('index');
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) {
+      document.getElementById('search-dropdown').classList.remove('open');
+    }
+  });
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const hashSlug = window.location.hash ? window.location.hash.slice(1) : 'index';
+    loadPage(hashSlug || 'index');
+  });
+</script>
+</body>
+</html>
+

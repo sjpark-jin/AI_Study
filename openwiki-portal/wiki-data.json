@@ -1,0 +1,550 @@
+{
+  "tree": {
+    "total_pages": 7,
+    "last_synced_at": "2026-11-18 13:08:50 UTC",
+    "source_info": {
+      "mode": "local",
+      "location": "/Users/sangjin/Desktop/workspace/AI_Study/openwiki-portal/openwiki"
+    },
+    "categories": {
+      "대문": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)",
+          "file_path": "index.md",
+          "updated": "2026-11-18"
+        }
+      ],
+      "메타": [
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)",
+          "file_path": "logs.md",
+          "updated": "2026-11-18"
+        }
+      ],
+      "아키텍처": [
+        {
+          "slug": "architecture/overview",
+          "title": "AI Study 전체 아키텍처 진화 개요",
+          "file_path": "architecture/overview.md",
+          "updated": "2026-11-18"
+        },
+        {
+          "slug": "architecture/hybrid-rag",
+          "title": "Advanced Hybrid RAG 파이프라인",
+          "file_path": "architecture/hybrid-rag.md",
+          "updated": "2026-11-18"
+        },
+        {
+          "slug": "architecture/system-one-jev",
+          "title": "TypeSafe AI Jev (System One) 정형 의사결정",
+          "file_path": "architecture/system-one-jev.md",
+          "updated": "2026-11-18"
+        }
+      ],
+      "가이드": [
+        {
+          "slug": "guides/ec2-deployment",
+          "title": "AWS EC2 프로덕션 배포 가이드",
+          "file_path": "guides/ec2-deployment.md",
+          "updated": "2026-11-18"
+        },
+        {
+          "slug": "guides/openwiki-workflow",
+          "title": "LangChain OpenWiki CLI & GitHub 자동 동기화 가이드",
+          "file_path": "guides/openwiki-workflow.md",
+          "updated": "2026-11-18"
+        }
+      ]
+    },
+    "all_slugs": [
+      "index",
+      "logs",
+      "architecture/hybrid-rag",
+      "architecture/overview",
+      "architecture/system-one-jev",
+      "guides/ec2-deployment",
+      "guides/openwiki-workflow"
+    ]
+  },
+  "pages": {
+    "index": {
+      "slug": "index",
+      "file_path": "index.md",
+      "title": "OpenWiki 지식 백과 (Main Page)",
+      "category": "대문",
+      "tags": [
+        "OpenWiki",
+        "LangChain",
+        "OKF",
+        "Knowledge-Graph",
+        "AI-Study"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "LangChain OpenWiki CLI가 GitHub 저장소 내에 생성·유지보수하는 마크다운(.md) 기반 위키피디아 포털의 루트 인덱스 문서입니다.",
+      "infobox": {
+        "프로젝트": "OpenWiki Portal",
+        "기반 기술": "LangChain OpenWiki (OKF v0.2)",
+        "웹 엔진": "FastAPI + Vanilla SPA",
+        "배포 환경": "AWS EC2 (Nginx + Systemd)",
+        "문서 형식": "Markdown + YAML Front Matter"
+      },
+      "content": "# OpenWiki 지식 백과에 오신 것을 환영합니다\n\n**OpenWiki**는 LangChain(`langchain-ai/openwiki`)이 제안한 오픈소스 CLI 및 에이전트 프레임워크로, GitHub 저장소의 코드 변경분(`git diff`)을 추적하여 AI 에이전트와 사람이 모두 탐색하기 좋은 **구조화된 마크다운 위키(`openwiki/`)**를 자동으로 생성하고 최신 상태로 유지합니다.\n\n이 웹 포털은 GitHub 저장소 내 `openwiki/` 폴더에 쌓인 `.md` 파일들을 실시간으로 파싱하여 **위키피디아(Wikipedia) 스타일의 백과사전 홈페이지**로 제공합니다.\n\n---\n\n## 주요 문서 디렉터리 (Index)\n\n### 1. 아키텍처 & AI 엔지니어링\n- [[architecture/overview|AI Study 전체 아키텍처 진화 개요]] — Week 01(최소 RAG)부터 Week 07(TypeSafe AI Jev)까지의 시스템 발전사\n- [[architecture/hybrid-rag|Advanced Hybrid RAG 파이프라인]] — BM25 키워드 검색, Dense Vector, RRF 및 Cross-Encoder Reranker\n- [[architecture/system-one-jev|TypeSafe AI Jev (System One) 정형 의사결정]] — `Choice`, `Score`, `Noul` 기반 확률적 워크플로 라우팅\n\n### 2. 운영 & 배포 가이드\n- [[guides/openwiki-workflow|LangChain OpenWiki CLI & GitHub 자동 동기화 가이드]] — `openwiki --init`, `openwiki --update` 및 CI/CD 연동법\n- [[guides/ec2-deployment|AWS EC2 프로덕션 배포 가이드]] — Ubuntu EC2 인스턴스에 Nginx + Systemd로 위키 포털 올리기\n\n### 3. 변경 이력 (Changelog)\n- [[logs|OpenWiki 변경 로그 (logs.md)]] — Git 커밋 기반 위키 문서 자동 갱신 이력\n\n---\n\n## 동작 원리 요약\n\n1. **GitHub 저장소 문서화**: 로컬 또는 GitHub Actions에서 `openwiki --init` / `openwiki --update`를 실행하면 `openwiki/` 폴더에 `index.md`, `logs.md`와 주제별 `.md` 파일이 생성됩니다.\n2. **그래프 & 백링크 파싱**: 백엔드(`wiki_loader.py`)가 모든 `.md` 파일의 YAML Front Matter, 목차(TOC), 내부 링크(`[[...]]`, `[...](...)`), 역참조 백링크(Backlinks)를 자동 인덱싱합니다.\n3. **위키피디아 웹 제공**: `index.html`이 인포박스(Infobox), 목차, 본문, 백링크, 전문 검색(Full-Text Search)을 위키피디아 UI로 렌더링합니다.\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "OpenWiki 지식 백과에 오신 것을 환영합니다",
+          "anchor": "openwiki-지식-백과에-오신-것을-환영합니다"
+        },
+        {
+          "level": 2,
+          "text": "주요 문서 디렉터리 (Index)",
+          "anchor": "주요-문서-디렉터리-index"
+        },
+        {
+          "level": 3,
+          "text": "1. 아키텍처 & AI 엔지니어링",
+          "anchor": "1-아키텍처-ai-엔지니어링"
+        },
+        {
+          "level": 3,
+          "text": "2. 운영 & 배포 가이드",
+          "anchor": "2-운영-배포-가이드"
+        },
+        {
+          "level": 3,
+          "text": "3. 변경 이력 (Changelog)",
+          "anchor": "3-변경-이력-changelog"
+        },
+        {
+          "level": 2,
+          "text": "동작 원리 요약",
+          "anchor": "동작-원리-요약"
+        }
+      ],
+      "outbound_links": [
+        "architecture/overview",
+        "architecture/hybrid-rag",
+        "architecture/system-one-jev",
+        "guides/openwiki-workflow",
+        "guides/ec2-deployment",
+        "logs",
+        "..."
+      ],
+      "backlinks": [
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        }
+      ],
+      "word_count": 233
+    },
+    "logs": {
+      "slug": "logs",
+      "file_path": "logs.md",
+      "title": "OpenWiki 변경 로그 (logs.md)",
+      "category": "메타",
+      "tags": [
+        "Changelog",
+        "Git-Diff",
+        "OpenWiki",
+        "Audit"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "OpenWiki가 Git 커밋 이력과 코드 diff를 분석하여 위키 문서를 자동 생성 및 갱신한 감사 로그입니다.",
+      "infobox": {
+        "파일 역할": "OKF 예약 로그 문서 (logs.md)",
+        "추적 방식": "Git Commit & Diff 기반 증분 업데이트",
+        "최신 갱신": "2026-11-18"
+      },
+      "content": "# OpenWiki 변경 로그 (`logs.md`)\n\nLangChain **OpenWiki**는 한 번 작성되고 방치되는 정적 문서를 방지하기 위해, 저장소의 커밋 이력(`git diff`)을 기반으로 변경된 모듈만 증분 업데이트하고 그 이력을 `logs.md`에 기록합니다.\n\n---\n\n## 2026-11-18 — 초기 위키 포털 부트스트랩 (`openwiki --init`)\n- **생성된 루트 문서**: [[index|index.md]] (OKF v0.2 인덱스)\n- **생성된 아키텍처 문서**:\n  - [[architecture/overview|architecture/overview.md]]\n  - [[architecture/hybrid-rag|architecture/hybrid-rag.md]]\n  - [[architecture/system-one-jev|architecture/system-one-jev.md]]\n- **생성된 운영 가이드**:\n  - [[guides/openwiki-workflow|guides/openwiki-workflow.md]]\n  - [[guides/ec2-deployment|guides/ec2-deployment.md]]\n\n---\n\n## 자동 갱신 파이프라인 연결 방법\nGitHub 저장소에 코드가 Push될 때 아래 명령이 실행되도록 설정하면, PR 또는 커밋 단위로 이 파일이 자동 업데이트됩니다:\n\n```bash\nnpm install -g openwiki\nopenwiki --update\n```\n\n자세한 설정 방법은 [[guides/openwiki-workflow|LangChain OpenWiki CLI & GitHub 자동 동기화 가이드]]를 참조하세요.\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "OpenWiki 변경 로그 (`logs.md`)",
+          "anchor": "openwiki-변경-로그-logsmd"
+        },
+        {
+          "level": 2,
+          "text": "2026-11-18 — 초기 위키 포털 부트스트랩 (`openwiki --init`)",
+          "anchor": "2026-11-18-초기-위키-포털-부트스트랩-openwiki---init"
+        },
+        {
+          "level": 2,
+          "text": "자동 갱신 파이프라인 연결 방법",
+          "anchor": "자동-갱신-파이프라인-연결-방법"
+        }
+      ],
+      "outbound_links": [
+        "index",
+        "architecture/overview",
+        "architecture/hybrid-rag",
+        "architecture/system-one-jev",
+        "guides/openwiki-workflow",
+        "guides/ec2-deployment"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "guides/openwiki-workflow",
+          "title": "LangChain OpenWiki CLI & GitHub 자동 동기화 가이드"
+        }
+      ],
+      "word_count": 108
+    },
+    "architecture/hybrid-rag": {
+      "slug": "architecture/hybrid-rag",
+      "file_path": "architecture/hybrid-rag.md",
+      "title": "Advanced Hybrid RAG 파이프라인",
+      "category": "아키텍처",
+      "tags": [
+        "BM25",
+        "Dense-Vector",
+        "RRF",
+        "Cross-Encoder",
+        "Ragas"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "단일 Dense Vector 검색의 고유명사/에러코드 누락 문제를 극복하기 위한 4단계 하이브리드 검색 및 Ragas 정량 평가 아키텍처입니다.",
+      "infobox": {
+        "검색 방식": "BM25 + Dense Vector",
+        "순위 융합": "RRF (k=60)",
+        "재순위화": "Cross-Encoder Reranker",
+        "평가 지표": "Faithfulness, Relevance, Precision"
+      },
+      "content": "# Advanced Hybrid RAG 파이프라인\n\n단일 임베딩(Dense Vector) 검색만 사용할 경우 `K8S-INGRESS-404`, `AUTH-JWT-V2`와 같은 사내 고유 에러 코드나 약어가 OOV(Out-of-Vocabulary)로 처리되어 검색 정확도가 급락하는 문제가 발생합니다.\n\n---\n\n## 4단계 검색 & 재순위화 파이프라인\n\n1. **BM25 키워드 검색**: 단어 빈도(TF)와 역문서 빈도(IDF)를 계산해 정확한 에러 코드 및 고유명사를 매칭합니다.\n2. **Dense Vector 의미 검색**: ChromaDB와 SentenceTransformers를 이용해 문맥적·의미적 유사 문서를 탐색합니다.\n3. **RRF (Reciprocal Rank Fusion)**: 점수 척도가 다른 BM25(0~15+)와 코사인 유사도(0~1)를 순위(Rank) 역수 합산 공식으로 안전하게 결합합니다.\n4. **Cross-Encoder Reranker**: 1차로 추려진 상위 4~8개 후보군에 대해서만 질문-문서 상호 어텐션(Cross-Attention)을 수행하여 지연 시간을 통제하면서도 정밀도를 극대화합니다.\n\n---\n\n## 관련 문서\n- [[architecture/overview|AI Study 전체 아키텍처 진화 개요]]\n- [[architecture/system-one-jev|TypeSafe AI Jev (System One) 정형 의사결정]]\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "Advanced Hybrid RAG 파이프라인",
+          "anchor": "advanced-hybrid-rag-파이프라인"
+        },
+        {
+          "level": 2,
+          "text": "4단계 검색 & 재순위화 파이프라인",
+          "anchor": "4단계-검색-재순위화-파이프라인"
+        },
+        {
+          "level": 2,
+          "text": "관련 문서",
+          "anchor": "관련-문서"
+        }
+      ],
+      "outbound_links": [
+        "architecture/overview",
+        "architecture/system-one-jev"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        },
+        {
+          "slug": "architecture/overview",
+          "title": "AI Study 전체 아키텍처 진화 개요"
+        }
+      ],
+      "word_count": 114
+    },
+    "architecture/overview": {
+      "slug": "architecture/overview",
+      "file_path": "architecture/overview.md",
+      "title": "AI Study 전체 아키텍처 진화 개요",
+      "category": "아키텍처",
+      "tags": [
+        "RAG",
+        "Agent",
+        "Multi-Agent",
+        "Hybrid-RAG",
+        "System-One"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "1주차 최소 RAG 챗봇부터 7주차 TypeSafe AI Jev 정형 의사결정 시스템까지 AI 아키텍처의 단계별 진화 과정을 정리한 문서입니다.",
+      "infobox": {
+        "범위": "Week 01 ~ Week 07",
+        "핵심 스택": "FastAPI, ChromaDB, BM25, Jev",
+        "관련 문서": "hybrid-rag, system-one-jev"
+      },
+      "content": "# AI Study 전체 아키텍처 진화 개요\n\n본 저장소는 매주 하나의 실무형 AI/아키텍처 과제를 직접 구축하며 **검색(Retrieval) → 추론(Reasoning) → 협업(Orchestration) → 평가(Evaluation) → 정형 제어(System One)**로 확장되는 계보를 다룹니다.\n\n---\n\n## 주차별 아키텍처 계보\n\n| 주차 | 핵심 주제 | 주요 해결 과제 |\n|:---:|:---|:---|\n| **Week 01** | 최소 RAG 챗봇 | ChromaDB + SentenceTransformers 기반 임베딩 및 코사인 유사도 검색 |\n| **Week 02** | RAG + LLM & 메모리 | 세션 컨텍스트 유지 및 입력 가드레일 적용 |\n| **Week 03** | AI Agent & Function Calling | ReAct 패턴 기반 사내 DB/이메일/RAG 도구 자율 호출 |\n| **Week 04** | Multi-Agent 협업 | Planner-Researcher-Reviewer 역할 분담 및 상태 머신 |\n| **Week 05** | Evaluator-Optimizer | LLM-as-a-Judge 4대 루브릭 채점 및 Latency Observability |\n| **Week 06** | [[architecture/hybrid-rag\\|Advanced Hybrid RAG]] | BM25 + Dense Vector + RRF + Cross-Encoder Reranker + Ragas 3대 지표 |\n| **Week 07** | [[architecture/system-one-jev\\|TypeSafe AI Jev]] | 자유 텍스트 없는 강타입 병렬 의사결정(`Choice`, `Score`, `Noul`) 및 HITL 라우팅 |\n\n---\n\n## 다음 단계: OpenWiki 기반 지식 그래프\n코드베이스가 커질수록 에이전트와 개발자 모두가 아키텍처 맥락을 잃지 않도록 [[guides/openwiki-workflow|LangChain OpenWiki]]를 통해 위키 문서를 지속 관리하고, [[guides/ec2-deployment|AWS EC2]]에 위키피디아 포털로 상시 배포합니다.\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "AI Study 전체 아키텍처 진화 개요",
+          "anchor": "ai-study-전체-아키텍처-진화-개요"
+        },
+        {
+          "level": 2,
+          "text": "주차별 아키텍처 계보",
+          "anchor": "주차별-아키텍처-계보"
+        },
+        {
+          "level": 2,
+          "text": "다음 단계: OpenWiki 기반 지식 그래프",
+          "anchor": "다음-단계-openwiki-기반-지식-그래프"
+        }
+      ],
+      "outbound_links": [
+        "architecture/hybrid-rag",
+        "architecture/system-one-jev",
+        "guides/openwiki-workflow",
+        "guides/ec2-deployment"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        },
+        {
+          "slug": "architecture/hybrid-rag",
+          "title": "Advanced Hybrid RAG 파이프라인"
+        },
+        {
+          "slug": "architecture/system-one-jev",
+          "title": "TypeSafe AI Jev (System One) 정형 의사결정"
+        }
+      ],
+      "word_count": 201
+    },
+    "architecture/system-one-jev": {
+      "slug": "architecture/system-one-jev",
+      "file_path": "architecture/system-one-jev.md",
+      "title": "TypeSafe AI Jev (System One) 정형 의사결정",
+      "category": "아키텍처",
+      "tags": [
+        "TypeSafe-AI",
+        "Jev",
+        "System-One",
+        "Choice",
+        "Score",
+        "Noul",
+        "HITL"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "자유 텍스트 생성을 배제하고 Choice, Score, Noul 강타입 프리미티브로 확률 분포와 신뢰도를 즉시 반환하는 System One 모델 아키텍처입니다.",
+      "infobox": {
+        "모델": "TypeSafe AI Jev (jev-latest)",
+        "패러다임": "System One (Non-Generative)",
+        "프리미티브": "Choice, Score, Noul",
+        "안전장치": "Security Gate & HITL Escalation"
+      },
+      "content": "# TypeSafe AI Jev (System One) 정형 의사결정\n\n생성형 LLM(System Two)에 JSON 포맷 출력을 지시해 소프트웨어 라우팅을 구현하면 마크다운 혼입, 프롬프트 인젝션에 의한 스키마 파괴, 그리고 모호한 질문에도 `0.95` 이상의 확신도를 출력하는 언어적 과신(Overconfidence) 문제가 발생합니다.\n\n---\n\n## 3대 강타입 질문 프리미티브 (`client.system_one`)\n\n- **`Choice`**: 비서열 다지선다 옵션 중 하나를 선택하고, 전체 옵션 확률 분포(`probabilities`)와 엔트로피 기반 신뢰도(`confidence`)를 반환합니다.\n- **`Score`**: 순서가 있는 루브릭(Rubric) 단계별 확률을 계산해 연속 기대 점수($\\mathbb{E}[S] = \\sum i \\cdot P_i$)를 산출합니다.\n- **`Noul`**: 특정 조건(예: 환불 요청 여부, 보안 위협 여부)이 참일 확률을 `0.0 ~ 1.0`으로 반환합니다.\n\n---\n\n## 확률 게이트 기반 제어 흐름\n- **보안 서킷 브레이커**: `security_risk.noul >= 0.65`일 경우 System Two(생성형 LLM) 호출 자체를 원천 차단합니다.\n- **HITL 에스컬레이션**: `department.confidence < 0.55`인 복합/모호 티켓은 자동 배정하지 않고 확률 분포표와 함께 사람 검토 큐로 이관합니다.\n\n자세한 전체 계보는 [[architecture/overview|AI Study 전체 아키텍처 진화 개요]]를 확인하세요.\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "TypeSafe AI Jev (System One) 정형 의사결정",
+          "anchor": "typesafe-ai-jev-system-one-정형-의사결정"
+        },
+        {
+          "level": 2,
+          "text": "3대 강타입 질문 프리미티브 (`client.system_one`)",
+          "anchor": "3대-강타입-질문-프리미티브-clientsystem_one"
+        },
+        {
+          "level": 2,
+          "text": "확률 게이트 기반 제어 흐름",
+          "anchor": "확률-게이트-기반-제어-흐름"
+        }
+      ],
+      "outbound_links": [
+        "architecture/overview"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        },
+        {
+          "slug": "architecture/hybrid-rag",
+          "title": "Advanced Hybrid RAG 파이프라인"
+        },
+        {
+          "slug": "architecture/overview",
+          "title": "AI Study 전체 아키텍처 진화 개요"
+        }
+      ],
+      "word_count": 142
+    },
+    "guides/ec2-deployment": {
+      "slug": "guides/ec2-deployment",
+      "file_path": "guides/ec2-deployment.md",
+      "title": "AWS EC2 프로덕션 배포 가이드",
+      "category": "가이드",
+      "tags": [
+        "AWS",
+        "EC2",
+        "Nginx",
+        "Systemd",
+        "FastAPI",
+        "Deployment"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "openwiki-portal 폴더를 AWS EC2(Ubuntu) 인스턴스에 업로드하고 Nginx 리버스 프록시 및 Systemd 서비스로 상시 운영하는 절차입니다.",
+      "infobox": {
+        "클라우드": "AWS EC2 (Ubuntu 22.04 / 24.04)",
+        "웹 서버": "Nginx (Port 80 -> 8000)",
+        "프로세스 관리": "systemd (openwiki-portal.service)",
+        "방화벽": "Security Group TCP 80, 443, 22"
+      },
+      "content": "# AWS EC2 프로덕션 배포 가이드\n\n`openwiki-portal/` 폴더에는 AWS EC2 환경에 즉시 배포할 수 있는 `deploy/setup_ec2.sh`, `deploy/nginx.conf`, `deploy/openwiki-portal.service` 파일이 포함되어 있습니다.\n\n---\n\n## 1. EC2 보안 그룹(Security Group) 설정\nAWS 콘솔에서 EC2 인스턴스의 인바운드 규칙에 아래 포트를 허용하세요:\n- **SSH (22)**: 관리자 IP\n- **HTTP (80)**: `0.0.0.0/0` (위키피디아 웹 포털 접속용)\n- **HTTPS (443)**: SSL/Certbot 적용 시 `0.0.0.0/0`\n\n---\n\n## 2. EC2에 코드 업로드 및 원클릭 설치\n\n```bash\n# 1. EC2 접속 후 저장소 클론 또는 scp로 openwiki-portal 업로드\ngit clone <YOUR_GITHUB_REPO_URL>\ncd AI_Study/openwiki-portal\n\n# 2. 제공된 EC2 자동 세팅 스크립트 실행\nchmod +x deploy/setup_ec2.sh\nsudo ./deploy/setup_ec2.sh\n```\n\n`setup_ec2.sh` 스크립트는 다음 작업을 자동으로 수행합니다:\n1. Python `venv` 생성 및 `requirements.txt` 패키지 설치\n2. `systemd` 서비스(`openwiki-portal.service`) 등록 및 상시 기동 (재부팅 시 자동 실행)\n3. `Nginx` 리버스 프록시(`80` → `127.0.0.1:8000`) 설정 및 재시작\n\n---\n\n## 3. 정적 호스팅 모드 (선택)\nFastAPI 백엔드 없이 Nginx만으로 순수 정적 HTML로 서빙하고 싶다면 아래 명령으로 `wiki-data.json`을 빌드한 뒤 `index.html`과 함께 Nginx 웹 루트에 배치할 수 있습니다:\n\n```bash\npython3 build_static.py\n```\n\n관련 가이드: [[guides/openwiki-workflow|LangChain OpenWiki CLI & GitHub 자동 동기화 가이드]]\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "AWS EC2 프로덕션 배포 가이드",
+          "anchor": "aws-ec2-프로덕션-배포-가이드"
+        },
+        {
+          "level": 2,
+          "text": "1. EC2 보안 그룹(Security Group) 설정",
+          "anchor": "1-ec2-보안-그룹security-group-설정"
+        },
+        {
+          "level": 2,
+          "text": "2. EC2에 코드 업로드 및 원클릭 설치",
+          "anchor": "2-ec2에-코드-업로드-및-원클릭-설치"
+        },
+        {
+          "level": 1,
+          "text": "1. EC2 접속 후 저장소 클론 또는 scp로 openwiki-portal 업로드",
+          "anchor": "1-ec2-접속-후-저장소-클론-또는-scp로-openwiki-portal-업로드"
+        },
+        {
+          "level": 1,
+          "text": "2. 제공된 EC2 자동 세팅 스크립트 실행",
+          "anchor": "2-제공된-ec2-자동-세팅-스크립트-실행"
+        },
+        {
+          "level": 2,
+          "text": "3. 정적 호스팅 모드 (선택)",
+          "anchor": "3-정적-호스팅-모드-선택"
+        }
+      ],
+      "outbound_links": [
+        "guides/openwiki-workflow"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        },
+        {
+          "slug": "architecture/overview",
+          "title": "AI Study 전체 아키텍처 진화 개요"
+        },
+        {
+          "slug": "guides/openwiki-workflow",
+          "title": "LangChain OpenWiki CLI & GitHub 자동 동기화 가이드"
+        }
+      ],
+      "word_count": 175
+    },
+    "guides/openwiki-workflow": {
+      "slug": "guides/openwiki-workflow",
+      "file_path": "guides/openwiki-workflow.md",
+      "title": "LangChain OpenWiki CLI & GitHub 자동 동기화 가이드",
+      "category": "가이드",
+      "tags": [
+        "LangChain",
+        "OpenWiki",
+        "GitHub",
+        "CLI",
+        "OKF",
+        "CI/CD"
+      ],
+      "updated": "2026-11-18",
+      "okf_version": "0.2",
+      "summary": "langchain-ai/openwiki CLI를 사용해 GitHub 저장소에 .md 위키 폴더를 생성하고, 본 웹 포털과 실시간 동기화하는 방법을 설명합니다.",
+      "infobox": {
+        "패키지": "openwiki (npm)",
+        "요구 런타임": "Node.js 22.22+ & Git",
+        "표준 포맷": "Open Knowledge Format (OKF)"
+      },
+      "content": "# LangChain OpenWiki CLI & GitHub 자동 동기화 가이드\n\n**OpenWiki**(`langchain-ai/openwiki`)는 코드베이스를 분석해 `openwiki/` 폴더 내에 마크다운 위키를 자동 생성하고, 이후 코드 변경분(`git diff`)만 추적해 문서를 최신 상태로 유지하는 CLI 도구입니다.\n\n---\n\n## 1. OpenWiki CLI 설치 및 초기화\n\n```bash\n# Node.js 22.22+ 환경에서 전역 설치\nnpm install -g openwiki\n\n# GitHub 저장소 루트에서 위키 초기화 (openwiki/ 폴더 및 index.md 생성)\nopenwiki --init\n\n# 이후 코드 변경 시 증분 업데이트\nopenwiki --update\n```\n\nOpenWiki가 생성하는 `openwiki/` 폴더에는 다음 구조가 포함됩니다:\n- `index.md`: 전체 위키 개념을 연결하는 루트 인덱스\n- `logs.md`: 변경 이력 및 diff 감사 로그 ([[logs|logs.md 보기]])\n- 주제별 `.md` 파일들: YAML Front Matter와 상호 링크로 연결된 문서\n\n---\n\n## 2. 본 웹 포털과 GitHub 저장소 연동하기\n\n이 포털은 **로컬 `openwiki/` 폴더**뿐 아니라 **원격 GitHub 저장소의 특정 폴더**에서 `.md` 파일을 직접 읽어와 위키피디아 형태로 렌더링할 수 있습니다.\n\n1. 웹 포털 상단 또는 사이드바의 **`GitHub 동기화`** 버튼을 클릭합니다.\n2. `owner/repo` (예: `langchain-ai/openwiki` 또는 본인 저장소), 브랜치(`main`), 폴더 경로(`openwiki`)를 입력합니다.\n3. 서버가 GitHub Contents API를 통해 해당 폴더의 모든 `.md` 파일을 내려받아 즉시 위키 그래프와 백링크를 재구성합니다.\n\n---\n\n## 3. EC2 서버 자동 최신화 (GitHub Actions / Webhook)\n[[guides/ec2-deployment|AWS EC2 프로덕션 배포 가이드]]에 따라 EC2에 서버를 올린 뒤, GitHub Actions에서 `openwiki --update`로 문서를 커밋하고 EC2의 `POST /api/wiki/sync` 엔드포인트를 호출하면 무중단으로 위키가 최신화됩니다.\n",
+      "headings": [
+        {
+          "level": 1,
+          "text": "LangChain OpenWiki CLI & GitHub 자동 동기화 가이드",
+          "anchor": "langchain-openwiki-cli-github-자동-동기화-가이드"
+        },
+        {
+          "level": 2,
+          "text": "1. OpenWiki CLI 설치 및 초기화",
+          "anchor": "1-openwiki-cli-설치-및-초기화"
+        },
+        {
+          "level": 1,
+          "text": "Node.js 22.22+ 환경에서 전역 설치",
+          "anchor": "nodejs-2222-환경에서-전역-설치"
+        },
+        {
+          "level": 1,
+          "text": "GitHub 저장소 루트에서 위키 초기화 (openwiki/ 폴더 및 index.md 생성)",
+          "anchor": "github-저장소-루트에서-위키-초기화-openwiki-폴더-및-indexmd-생성"
+        },
+        {
+          "level": 1,
+          "text": "이후 코드 변경 시 증분 업데이트",
+          "anchor": "이후-코드-변경-시-증분-업데이트"
+        },
+        {
+          "level": 2,
+          "text": "2. 본 웹 포털과 GitHub 저장소 연동하기",
+          "anchor": "2-본-웹-포털과-github-저장소-연동하기"
+        },
+        {
+          "level": 2,
+          "text": "3. EC2 서버 자동 최신화 (GitHub Actions / Webhook)",
+          "anchor": "3-ec2-서버-자동-최신화-github-actions-webhook"
+        }
+      ],
+      "outbound_links": [
+        "logs",
+        "guides/ec2-deployment"
+      ],
+      "backlinks": [
+        {
+          "slug": "index",
+          "title": "OpenWiki 지식 백과 (Main Page)"
+        },
+        {
+          "slug": "logs",
+          "title": "OpenWiki 변경 로그 (logs.md)"
+        },
+        {
+          "slug": "architecture/overview",
+          "title": "AI Study 전체 아키텍처 진화 개요"
+        },
+        {
+          "slug": "guides/ec2-deployment",
+          "title": "AWS EC2 프로덕션 배포 가이드"
+        }
+      ],
+      "word_count": 210
+    }
+  }
+}

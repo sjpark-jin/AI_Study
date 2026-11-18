@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Week 06 — Advanced Hybrid RAG & RAG Evaluation Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(18, 24, 38, 0.75);
+      --bg-card-hover: rgba(28, 38, 60, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.3);
+      --primary: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.1) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      font-size: 13px;
+      font-weight: 600;
+      color: #a5b4fc;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-desc {
+      color: var(--text-muted);
+      font-size: 15px;
+      margin-top: 4px;
+    }
+    .header-links {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-pill {
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    .btn-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
+
+    /* Navigation Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-btn.active {
+      color: #ffffff;
+      background: var(--primary);
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Tab Content Panels */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card System */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      margin-bottom: 24px;
+    }
+
+    /* Preset Buttons */
+    .presets-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0 20px 0;
+      align-items: center;
+    }
+    .preset-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+    .preset-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .preset-chip:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* Input & Form */
+    .input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .search-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      color: #fff;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+    .btn-action {
+      background: var(--primary-gradient);
+      border: none;
+      border-radius: 10px;
+      padding: 0 28px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+    .controls-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 4-Column Search Results Grid */
+    .comparator-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+    @media (max-width: 1080px) {
+      .comparator-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .comparator-grid { grid-template-columns: 1fr; }
+    }
+
+    .col-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .col-card.highlight {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.06);
+    }
+    .col-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .col-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .col-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .badge-bm25 { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-dense { background: rgba(6, 182, 212, 0.15); color: #38bdf8; }
+    .badge-rrf { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .badge-rerank { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+
+    .doc-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+    .doc-item:last-child { margin-bottom: 0; }
+    .doc-header-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .doc-rank {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #94a3b8;
+    }
+    .doc-score {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #a5b4fc;
+      background: rgba(99, 102, 241, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .doc-title {
+      font-weight: 600;
+      color: #f1f5f9;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+    .doc-snippet {
+      color: #94a3b8;
+      font-size: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      line-height: 1.4;
+    }
+
+    /* Triad Evaluation Metrics Display */
+    .triad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 20px 0;
+    }
+    @media (max-width: 768px) {
+      .triad-grid { grid-template-columns: 1fr; }
+    }
+    .metric-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .metric-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .metric-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .metric-score-val {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0 10px 0;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    .metric-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Answer box */
+    .answer-box {
+      background: rgba(30, 41, 59, 0.5);
+      border-left: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 18px;
+      margin: 16px 0;
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-line;
+    }
+
+    /* Learning Hub Styles */
+    .trouble-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .trouble-table th, .trouble-table td {
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      text-align: left;
+    }
+    .trouble-table th {
+      background: rgba(255, 255, 255, 0.05);
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+    .trouble-table tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .curriculum-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 14px;
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .timeline-pill {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .timeline-title {
+      font-weight: 700;
+      font-size: 14px;
+      color: #f1f5f9;
+      margin-bottom: 2px;
+    }
+    .timeline-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .code-block {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #e2e8f0;
+      overflow-x: auto;
+      margin: 12px 0;
+      line-height: 1.5;
+    }
+
+    /* Loader */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header>
+    <div>
+      <div class="brand-badge">🚀 AI Study — 6주차 실습 & 학습 포털</div>
+      <h1>Week 06: Advanced Hybrid RAG & RAG Evaluation</h1>
+      <div class="header-desc">BM25 키워드 + Dense Vector + Cross-Encoder Reranker 및 Ragas 3대 지표(Faithfulness, Relevance, Precision) 정량 평가</div>
+    </div>
+    <div class="header-links">
+      <a href="/docs" target="_blank" class="btn-pill">📖 Swagger Docs</a>
+      <a href="/api/info" target="_blank" class="btn-pill">⚙️ API 상태</a>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab('tab-compare')">🔍 4분할 검색 비교 시뮬레이터</button>
+    <button class="tab-btn" onclick="switchTab('tab-rag')">⚡ 하이브리드 RAG & 실시간 평가</button>
+    <button class="tab-btn" onclick="switchTab('tab-eval-direct')">⚖️ RAG 지표 직접 채점기</button>
+    <button class="tab-btn" onclick="switchTab('tab-learn')">📘 다시 보고 배우는 학습 허브</button>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TAB 1: 4분할 검색 비교 시뮬레이터 -->
+  <!-- ======================================================================== -->
+  <div id="tab-compare" class="tab-panel active">
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">단일 Vector vs BM25 vs RRF 하이브리드 vs Reranker 비교</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        고유 에러 코드(K8S-INGRESS-404)나 사내 규격(AUTH-JWT-V2)을 검색하여 검색 엔진별 순위 변동을 실시간으로 확인해보세요.
+      </p>
+
+      <!-- Presets -->
+      <div class="presets-wrap">
+        <span class="preset-label">💡 테스트 프리셋:</span>
+        <button class="preset-chip" onclick="applyPreset('K8S-INGRESS-404 인그레스 에러 발생 시 조치 방법')">Kubernetes 에러 (K8S-INGRESS-404)</button>
+        <button class="preset-chip" onclick="applyPreset('AUTH-JWT-V2 통합 인증 규격과 토큰 만료 시간')">차세대 인증 (AUTH-JWT-V2)</button>
+        <button class="preset-chip" onclick="applyPreset('DB-CONN-TIMEOUT-1002 커넥션 풀 타임아웃 장애')">DB 풀 고갈 (DB-CONN-TIMEOUT-1002)</button>
+        <button class="preset-chip" onclick="applyPreset('원격 근무 시 VPN 보안 접속 및 로컬 디스크 저장 규정')">원격 근무 보안 규정 (제14조)</button>
+        <button class="preset-chip" onclick="applyPreset('대형 언어 모델 서빙 GPU-A100-CUDA12 권장 사양')">GPU 인프라 (GPU-A100-CUDA12)</button>
+      </div>
+
+      <!-- Input Form -->
+      <div class="input-row">
+        <input type="text" id="compare-query" class="search-input" placeholder="검색할 질문이나 키워드를 입력하세요..." value="K8S-INGRESS-404 인그레스 에러 발생 시 조치 방법" />
+        <button class="btn-action" id="btn-compare" onclick="runSearchComparison()">
+          <span>비교 검색</span>
+        </button>
+      </div>
+
+      <div class="controls-row">
+        <div class="range-control">
+          <span>Dense 가중치:</span>
+          <input type="range" id="dense-weight" min="0" max="1" step="0.1" value="0.5" oninput="updateWeights()" />
+          <span id="dense-weight-val" style="font-family: var(--font-mono); color: #38bdf8;">0.5</span>
+        </div>
+        <div class="range-control">
+          <span>BM25 가중치:</span>
+          <input type="range" id="bm25-weight" min="0" max="1" step="0.1" value="0.5" oninput="updateWeights()" />
+          <span id="bm25-weight-val" style="font-family: var(--font-mono); color: #fbbf24;">0.5</span>
+        </div>
+      </div>
+
+      <!-- 4 Columns Grid -->
+      <div class="comparator-grid">
+        <!-- 1. BM25 -->
+        <div class="col-card">
+          <div class="col-header">
+            <span class="col-title">🔤 1. BM25 키워드</span>
+            <span class="col-badge badge-bm25">정확 매칭</span>
+          </div>
+          <div id="col-bm25-docs">검색을 실행하면 결과가 표시됩니다.</div>
+        </div>
+
+        <!-- 2. Dense Vector -->
+        <div class="col-card">
+          <div class="col-header">
+            <span class="col-title">🧠 2. Dense Vector</span>
+            <span class="col-badge badge-dense">문맥 의미</span>
+          </div>
+          <div id="col-dense-docs">검색을 실행하면 결과가 표시됩니다.</div>
+        </div>
+
+        <!-- 3. Hybrid (RRF) -->
+        <div class="col-card">
+          <div class="col-header">
+            <span class="col-title">🧬 3. RRF 하이브리드</span>
+            <span class="col-badge badge-rrf">순위 융합</span>
+          </div>
+          <div id="col-rrf-docs">검색을 실행하면 결과가 표시됩니다.</div>
+        </div>
+
+        <!-- 4. Reranker Final -->
+        <div class="col-card highlight">
+          <div class="col-header">
+            <span class="col-title">⭐ 4. Cross-Encoder</span>
+            <span class="col-badge badge-rerank">최종 Rerank</span>
+          </div>
+          <div id="col-rerank-docs">검색을 실행하면 결과가 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TAB 2: 하이브리드 RAG & 실시간 평가 -->
+  <!-- ======================================================================== -->
+  <div id="tab-rag" class="tab-panel">
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">하이브리드 RAG 질의응답 및 Ragas 정량 평가</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+        하이브리드 검색과 Reranker로 선별된 문맥을 바탕으로 답변을 생성하고, Ragas 3대 지표(Faithfulness, Relevance, Precision)로 즉시 검증합니다.
+      </p>
+
+      <div class="input-row">
+        <input type="text" id="rag-query" class="search-input" placeholder="RAG 질의를 입력하세요..." value="AUTH-JWT-V2 통합 인증 규격의 토큰 만료 시간과 서명 알고리즘을 설명해줘." />
+        <button class="btn-action" id="btn-rag-run" onclick="runRAGPipeline()">
+          <span>답변 생성 및 평가</span>
+        </button>
+      </div>
+
+      <!-- Generated Answer -->
+      <div id="rag-output-wrap" style="display: none;">
+        <h3 style="font-size: 15px; margin-top: 20px; color: #cbd5e1;">🤖 생성된 RAG 답변</h3>
+        <div class="answer-box" id="rag-answer-text"></div>
+
+        <!-- Triad Metrics -->
+        <h3 style="font-size: 15px; margin-top: 24px; color: #cbd5e1;">📊 Ragas 3대 지표 정량 평가 결과</h3>
+        <div class="triad-grid">
+          <!-- Faithfulness -->
+          <div class="metric-card">
+            <div class="metric-top">
+              <span class="metric-name">🛡️ Faithfulness (충실도)</span>
+              <span class="metric-score-val" id="metric-faith-val" style="color: var(--emerald);">--</span>
+            </div>
+            <div class="bar-bg"><div id="bar-faith" class="bar-fill" style="width: 0%; background: var(--emerald);"></div></div>
+            <div class="metric-desc" id="metric-faith-desc">생성 답변이 검색된 사실에만 근거하는지 검증 (환각 방지)</div>
+          </div>
+
+          <!-- Answer Relevance -->
+          <div class="metric-card">
+            <div class="metric-top">
+              <span class="metric-name">🎯 Answer Relevance (관련성)</span>
+              <span class="metric-score-val" id="metric-rel-val" style="color: var(--cyan);">--</span>
+            </div>
+            <div class="bar-bg"><div id="bar-rel" class="bar-fill" style="width: 0%; background: var(--cyan);"></div></div>
+            <div class="metric-desc" id="metric-rel-desc">사용자의 질문 핵심 의도에 정확히 부합하는지 평가</div>
+          </div>
+
+          <!-- Context Precision -->
+          <div class="metric-card">
+            <div class="metric-top">
+              <span class="metric-name">📌 Context Precision (문맥 정확도)</span>
+              <span class="metric-score-val" id="metric-prec-val" style="color: var(--amber);">--</span>
+            </div>
+            <div class="bar-bg"><div id="bar-prec" class="bar-fill" style="width: 0%; background: var(--amber);"></div></div>
+            <div class="metric-desc" id="metric-prec-desc">답변에 유용한 핵심 문서가 상위 순위에 적중했는지 평가</div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 13px; color: #94a3b8;">
+          <strong style="color: #fff;">💡 품질 총평 및 개선 피드백:</strong> <span id="rag-feedback-text"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TAB 3: RAG 지표 직접 채점기 -->
+  <!-- ======================================================================== -->
+  <div id="tab-eval-direct" class="tab-panel">
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">RAG Triad 수동 채점 샌드박스</h2>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+        임의의 질문, 검색 문맥, 생성 답변을 붙여넣고 충실도/관련성/문맥 정확도 점수를 즉시 계산해보세요.
+      </p>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">사용자 질문:</label>
+        <input type="text" id="direct-query" class="search-input" style="width: 100%;" value="사내 DB 커넥션 풀 고갈 시 권장 설정값은?" />
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">검색된 문맥 (Context):</label>
+        <textarea id="direct-context" class="search-input" style="width: 100%; height: 90px; resize: vertical;">HikariCP 기준으로 기본 maximumPoolSize는 30으로 권장되며, connectionTimeout은 3000ms입니다. 해당 에러 발생 시 슬로우 쿼리 로그를 점검하십시오.</textarea>
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">생성된 답변 (Candidate Answer):</label>
+        <textarea id="direct-answer" class="search-input" style="width: 100%; height: 80px; resize: vertical;">HikariCP의 권장 maximumPoolSize는 30이며 connectionTimeout은 3000ms로 설정해야 합니다.</textarea>
+      </div>
+
+      <button class="btn-action" onclick="runDirectEvaluation()">
+        <span>지표 즉시 채점</span>
+      </button>
+
+      <div id="direct-eval-result" style="margin-top: 20px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- TAB 4: 다시 보고 배우는 학습 허브 -->
+  <!-- ======================================================================== -->
+  <div id="tab-learn" class="tab-panel">
+    <!-- 1. Why Hybrid RAG? -->
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">1. 왜 단순 Vector 검색을 넘어 Hybrid + Reranker인가?</h2>
+      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+        기존 Dense Vector 임베딩 검색은 자연어 질문의 문맥적 유사도를 찾는 데 뛰어나지만, 
+        <strong>고유명사, 에러 코드(K8S-INGRESS-404), 모델명(GPU-A100-CUDA12), 법률/규정 조항(제14조)</strong>과 같은 정확 매칭이 필요한 도메인에서 치명적인 누락이 발생합니다.
+        반면 BM25는 키워드 정확 일치에 강하나 패러프레이징(말바꿔쓰기)을 이해하지 못합니다.<br>
+        따라서 <strong>"BM25 + Dense Vector + RRF 융합 + Cross-Encoder Reranker"</strong>의 4단계 하이브리드 파이프라인이 최신 실무 RAG의 표준 아키텍처로 자리잡았습니다.
+      </p>
+
+      <div class="code-block">
+[사용자 질문]
+     │
+     ├── 1. BM25 키워드 검색 ────────┐ (Okapi BM25 스코어)
+     │                                │
+     └── 2. Dense Vector 검색 ───────┼──> [3. RRF 순위 융합 (Top-K)] ──> [4. Cross-Encoder Reranker (Top-N)] ──> [LLM 답변 생성]
+                                      │                                                                                   │
+                                      └─────────────────────────────────── [5. Ragas 3대 지표 정량 평가] <────────────────┘
+                                                                               - Faithfulness (환각 여부)
+                                                                               - Answer Relevance (답변 부합도)
+                                                                               - Context Precision (상위 문서 적중률)
+      </div>
+    </div>
+
+    <!-- 2. Trouble Shooting Notes (10가지 실수 노트) -->
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">2. 만들어보며 겪은 10가지 실수 노트 (Troubleshooting Guide)</h2>
+      <p style="font-size: 13px; color: var(--text-muted);">
+        현업에서 하이브리드 RAG 및 평가 파이프라인을 구축할 때 가장 빈번하게 발생하는 함정과 극복 방법입니다.
+      </p>
+
+      <table class="trouble-table">
+        <thead>
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th style="width: 20%;">문제 현상</th>
+            <th style="width: 35%;">왜 발생했나? (원인)</th>
+            <th style="width: 40%;">이렇게 해결함 (해결책)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><strong>에러코드 검색 시 엉뚱한 문서 반환</strong></td>
+            <td>단일 Dense Vector 임베딩이 하이픈(-) 포함 특수 토큰을 제대로 인코딩하지 못함</td>
+            <td>BM25 키워드 검색기를 병행 배치하여 고유 에러코드 정확 매칭 우선권 부여</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><strong>BM25와 Dense 점수의 직접 합산 왜곡</strong></td>
+            <td>BM25 점수(0~15+)와 Dense 코사인 유사도(0~1)의 스케일 차이로 한쪽이 결과 독점</td>
+            <td>절대 점수가 아닌 순위 기반 RRF(Reciprocal Rank Fusion, k=60) 알고리즘 적용</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><strong>Reranker 적용 시 속도 저하(Latency 급증)</strong></td>
+            <td>전체 코퍼스 문서에 대해 무거운 Cross-Encoder를 실행함</td>
+            <td>1차 융합으로 상위 4~8개 후보군만 추린 후 소수 Top-K에 대해서만 Rerank 수행</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td><strong>Reranker가 오히려 질문 키워드를 무시</strong></td>
+            <td>Cross-Encoder 입력 시 문서의 제목(Title) 메타데이터를 누락하고 본문만 전달</td>
+            <td>`[문서 제목] + \n + [문서 본문]` 형태로 문맥을 재구성하여 Reranker에 주입</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><strong>RAG 답변에 문서에 없는 추측 포함 (Hallucination)</strong></td>
+            <td>시스템 프롬프트에 "제공된 문서에만 기반할 것"이라는 제약 조건이 모호함</td>
+            <td>프롬프트 강화 및 Faithfulness 평가 지표를 연결하여 환각 발생 시 자동 재작성 유도</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td><strong>한국어 조사로 인한 BM25 매칭 실패</strong></td>
+            <td>단순 공백 단위 분절 시 '에러코드는', '에러코드가'를 서로 다른 토큰으로 인식</td>
+            <td>한글 어절 및 특수문자 보존 복합어 정규식 토크나이저(`tokenize_text`) 구현</td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td><strong>ChromaDB 최초 구동 시 지연</strong></td>
+            <td>요청마다 임베딩 모델과 벡터스토어를 반복 생성함</td>
+            <td>싱글톤 패턴(`HybridRetriever`)으로 서버 기동 시 최초 1회만 적재되도록 캐싱</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td><strong>평가 결과 JSON 파싱 에러</strong></td>
+            <td>LLM-as-a-Judge 응답에 서론/마크다운 블록이 섞여 `json.loads` 예외 발생</td>
+            <td>Pydantic 기반 정규식 정제 및 Fallback 기본 점수 방어 로직 구축</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td><strong>문서가 짧을 때 BM25 점수 과대평가</strong></td>
+            <td>BM25 공식에서 문서 길이 정규화(b=0.75)가 짧은 문장에 지나친 패널티나 왜곡 유발</td>
+            <td>`avgdl` 분모 0 방지(max 1e-6) 및 최소 토큰 길이 보정</td>
+          </tr>
+          <tr>
+            <td>10</td>
+            <td><strong>API 키 미설정 시 파이프라인 전체 다운</strong></td>
+            <td>로컬 환경이나 테스트 시 외부 OpenAI 서버 연동 장애에 취약</td>
+            <td>MockLLMProvider를 탑재하여 키 없이도 전 구간 시뮬레이션 및 교육 검증 보장</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3. Curriculum Roadmap Overview (1~6주차 계보) -->
+    <div class="glass-card">
+      <h2 style="font-size: 18px; margin-bottom: 8px;">3. AI Study 1주차~6주차 아키텍처 진화 로드맵</h2>
+      <div class="curriculum-timeline">
+        <div class="timeline-item">
+          <span class="timeline-pill" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc;">Week 01</span>
+          <div>
+            <div class="timeline-title">최소 RAG 챗봇 직접 구성하기</div>
+            <div class="timeline-desc">FastAPI, ChromaDB, SentenceTransformers 기반 임베딩과 코사인 유사도 검색 기초</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-pill" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8;">Week 02</span>
+          <div>
+            <div class="timeline-title">RAG + LLM 연동 및 프롬프트/메모리 고도화</div>
+            <div class="timeline-desc">LLM 프로바이더 연동, 검색 결과 컨텍스트 주입, 대화 세션 메모리 및 입력 가드레일</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-pill" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">Week 03</span>
+          <div>
+            <div class="timeline-title">AI Agent & Function Calling 구축</div>
+            <div class="timeline-desc">ReAct(Thought-Action-Observation) 패턴, 사내 DB/이메일/RAG 도구 자율 호출 및 실행 래퍼</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-pill" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">Week 04</span>
+          <div>
+            <div class="timeline-title">Multi-Agent 협업 및 워크플로 상태 관리</div>
+            <div class="timeline-desc">Planner - Researcher - Reviewer 역할 분담 오케스트레이션 및 상태 머신(State Flow)</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <span class="timeline-pill" style="background: rgba(244, 63, 94, 0.2); color: #fb7185;">Week 05</span>
+          <div>
+            <div class="timeline-title">Evaluator-Optimizer 루프 및 LLM Observability</div>
+            <div class="timeline-desc">LLM-as-a-Judge 4대 루브릭 채점, 자율 최적화 피드백 반복, 세션 Latency 트레이싱 모니터링</div>
+          </div>
+        </div>
+        <div class="timeline-item" style="border-color: var(--primary); background: rgba(99, 102, 241, 0.08);">
+          <span class="timeline-pill" style="background: var(--primary); color: #fff;">Week 06 (현재)</span>
+          <div>
+            <div class="timeline-title">Advanced Hybrid RAG Pipeline & Ragas 정량 평가</div>
+            <div class="timeline-desc">BM25 + Dense Vector + RRF + Cross-Encoder Reranker 및 Faithfulness, Relevance, Precision 정량 검증</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- JavaScript Logic -->
+<script>
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    
+    event.currentTarget.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  function applyPreset(text) {
+    document.getElementById('compare-query').value = text;
+    document.getElementById('rag-query').value = text;
+    runSearchComparison();
+  }
+
+  function updateWeights() {
+    const dw = document.getElementById('dense-weight').value;
+    const bw = document.getElementById('bm25-weight').value;
+    document.getElementById('dense-weight-val').innerText = dw;
+    document.getElementById('bm25-weight-val').innerText = bw;
+  }
+
+  // --- 1. 비교 검색 실행 ---
+  async function runSearchComparison() {
+    const query = document.getElementById('compare-query').value.trim();
+    if (!query) return alert('검색어를 입력하세요.');
+
+    const dw = parseFloat(document.getElementById('dense-weight').value);
+    const bw = parseFloat(document.getElementById('bm25-weight').value);
+
+    const btn = document.getElementById('btn-compare');
+    btn.innerHTML = '<span class="spinner"></span> <span>검색 중...</span>';
+
+    try {
+      const res = await fetch('/search/hybrid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, top_k: 4, dense_weight: dw, bm25_weight: bw })
+      });
+      const data = await res.json();
+
+      renderDocList('col-bm25-docs', data.bm25_candidates, 'bm25_score', '점수: ');
+      renderDocList('col-dense-docs', data.dense_candidates, 'dense_score', '유사도: ');
+      renderDocList('col-rrf-docs', data.hybrid_rrf_candidates, 'rrf_score', 'RRF: ');
+      renderDocList('col-rerank-docs', data.reranked_final_candidates, 'rerank_score', 'Rerank: ');
+    } catch (e) {
+      alert('검색 실패: ' + e);
+    } finally {
+      btn.innerHTML = '<span>비교 검색</span>';
+    }
+  }
+
+  function renderDocList(elementId, list, scoreKey, scorePrefix) {
+    const el = document.getElementById(elementId);
+    if (!list || list.length === 0) {
+      el.innerHTML = '<div style="color: #64748b; font-size: 13px;">결과 없음</div>';
+      return;
+    }
+    el.innerHTML = list.map((d, i) => `
+      <div class="doc-item">
+        <div class="doc-header-line">
+          <span class="doc-rank">#${i+1} ${d.doc_id || ''}</span>
+          <span class="doc-score">${scorePrefix}${d[scoreKey] !== undefined ? d[scoreKey] : ''}</span>
+        </div>
+        <div class="doc-title">${d.title}</div>
+        <div class="doc-snippet">${d.content}</div>
+      </div>
+    `).join('');
+  }
+
+  // --- 2. RAG 파이프라인 및 실시간 평가 ---
+  async function runRAGPipeline() {
+    const query = document.getElementById('rag-query').value.trim();
+    if (!query) return alert('질문을 입력하세요.');
+
+    const btn = document.getElementById('btn-rag-run');
+    btn.innerHTML = '<span class="spinner"></span> <span>생성 및 평가 중...</span>';
+
+    try {
+      const res = await fetch('/rag/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, use_hybrid: true, use_rerank: true })
+      });
+      const data = await res.json();
+
+      document.getElementById('rag-output-wrap').style.display = 'block';
+      document.getElementById('rag-answer-text').innerText = data.answer;
+
+      const ev = data.evaluation;
+      // Faithfulness
+      document.getElementById('metric-faith-val').innerText = ev.faithfulness.score + '점';
+      document.getElementById('bar-faith').style.width = ev.faithfulness.score + '%';
+      document.getElementById('metric-faith-desc').innerText = ev.faithfulness.reason;
+
+      // Relevance
+      document.getElementById('metric-rel-val').innerText = ev.answer_relevance.score + '점';
+      document.getElementById('bar-rel').style.width = ev.answer_relevance.score + '%';
+      document.getElementById('metric-rel-desc').innerText = ev.answer_relevance.reason;
+
+      // Precision
+      document.getElementById('metric-prec-val').innerText = ev.context_precision.score + '점';
+      document.getElementById('bar-prec').style.width = ev.context_precision.score + '%';
+      document.getElementById('metric-prec-desc').innerText = ev.context_precision.reason;
+
+      document.getElementById('rag-feedback-text').innerText = ev.actionable_feedback;
+    } catch (e) {
+      alert('RAG 실행 실패: ' + e);
+    } finally {
+      btn.innerHTML = '<span>답변 생성 및 평가</span>';
+    }
+  }
+
+  // --- 3. RAG 직접 평가 ---
+  async function runDirectEvaluation() {
+    const query = document.getElementById('direct-query').value.trim();
+    const context = document.getElementById('direct-context').value.trim();
+    const answer = document.getElementById('direct-answer').value.trim();
+
+    const res = await fetch('/rag/evaluate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, contexts: [context], answer })
+    });
+    const data = await res.json();
+
+    const el = document.getElementById('direct-eval-result');
+    el.style.display = 'block';
+    el.innerHTML = `
+      <div style="background: rgba(15,23,42,0.8); border: 1px solid var(--border); border-radius: 10px; padding: 18px;">
+        <h3 style="font-size: 15px; margin-bottom: 12px;">채점 결과: 종합 ${data.overall_score}점 (${data.is_passed ? '✅ 통과' : '❌ 기준 미달'})</h3>
+        <p style="font-size: 13px; margin-bottom: 6px;"><strong>충실도 (Faithfulness):</strong> ${data.faithfulness.score}점 - ${data.faithfulness.reason}</p>
+        <p style="font-size: 13px; margin-bottom: 6px;"><strong>답변 관련성 (Relevance):</strong> ${data.answer_relevance.score}점 - ${data.answer_relevance.reason}</p>
+        <p style="font-size: 13px; margin-bottom: 10px;"><strong>문맥 정확도 (Precision):</strong> ${data.context_precision.score}점 - ${data.context_precision.reason}</p>
+        <div style="font-size: 13px; color: #a5b4fc;"><strong>개선 피드백:</strong> ${data.actionable_feedback}</div>
+      </div>
+    `;
+  }
+
+  // 페이지 로드 시 기본 검색 1회 실행
+  window.addEventListener('DOMContentLoaded', () => {
+    runSearchComparison();
+  });
+</script>
+
+</body>
+</html>
